@@ -5,7 +5,7 @@
 
 ## TO SETUP
 
-1. Clone this repository `git clone https://github.com/crane-cloud/multi-cluster-monitor.git`
+1. Clone this repository `git clone https://github.com/crane-cloud/multi-cluster.git`
 2. Create a virtual environment 
 
     - App was developed with `Python 3.6`.
