@@ -1,6 +1,7 @@
 from jsonrpclib import Server
 import sys
 from datetime import datetime
+from latency import get_jitter, get_latency
 
 cluster_list = [{"id":1, "cluster_name":"cis-lib1", "ip": "http://localhost:5141"}, 
                     {"id":2, "cluster_name":"dicts-01", "ip": "http://localhost:5142"}]
@@ -13,12 +14,13 @@ def main():
         # INSERT NETWORK METRICS
         cluster_id= 1
         throughput = 2.233
-        latency = 4.922
-        jitter = 1.59229
-        date = '28-10-2022'
+        latency = get_latency()
+        jitter = get_jitter()
+        date = '23-11-2022'
         metrics = (cluster_id,throughput,latency,jitter,date)
         print("Inserting network data..")
         print(server.insert_network(metrics))
+
 
 
         # INSERT AVAILABILITY METRICS
