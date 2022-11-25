@@ -16,7 +16,7 @@ if result.error:
 else:
     #print(result)
     print('')
-    print('Test completed:')
+    print('Throughput Test completed:')
     #udp protocol results
     #print('  started at         {0}'.format(result.time))
     #print('  bytes transmitted  {0}'.format(result.bytes))
@@ -34,4 +34,7 @@ else:
     print('  bytes received      (bytes)   {0}'.format(result.received_bytes))
     print('  kilobits sent      (kbps)   {0}'.format(result.received_kbps))
     print('  Megabits sent      (mbps)   {0}'.format(result.received_Mbps))
+    
 
+def get_throughtput():
+    return (result.sent_Mbps+ result.received_Mbps)/2 

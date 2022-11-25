@@ -12,6 +12,7 @@ def jitterCalculator(latencies):
 
 
 latency_result = measure_latency(host='196.32.212.213', port=6443, runs=10, timeout=2.5)
+print("Latency Test results:")
 print(latency_result)
 print('')
 print('Jitter from latency values, (ms)')
