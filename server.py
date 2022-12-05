@@ -4,6 +4,8 @@ import sqlite3
 from sqlite3 import Error
 import re
 import json
+import os
+
 
 @method
 def create_connection(db_file):
@@ -40,15 +42,15 @@ def select_all_network_metrics() -> Result:
     for row in rows:
         print(row)
     if rows:
-        result = { "network data": rows, "message" : "success", "status":201 }
+        result = {"network data": rows, "message": "success", "status": 201}
     else:
-        result = { "network data": Error, "message" : "failed", "status":500 }
-        
+        result = {"network data": Error, "message": "failed", "status": 500}
+
     return Success(result)
 
 
 @method
-def select_metrics_by_cluster(cluster_id,metric_type) -> Result:
+def select_metrics_by_cluster(cluster_id, metric_type) -> Result:
     database = "metrics.db"
 
     # create a database connection
@@ -60,18 +62,19 @@ def select_metrics_by_cluster(cluster_id,metric_type) -> Result:
     :return:
     """
     cur = conn.cursor()
-    cur.execute("SELECT * FROM "+metric_type+" WHERE cluster_id=?", (cluster_id,))
+    cur.execute("SELECT * FROM "+metric_type +
+                " WHERE cluster_id=?", (cluster_id,))
 
     rows = cur.fetchall()
 
     for row in rows:
         print(row)
-        
+
     if rows:
-        result = { "data": rows, "message" : "success", "status":201 }
+        result = {"data": rows, "message": "success", "status": 201}
     else:
-        result = { "data": Error, "message" : "failed", "status":500 }
-        
+        result = {"data": Error, "message": "failed", "status": 500}
+
     return Success(result)
 
 
@@ -81,7 +84,8 @@ def insert_network(metrics) -> Result:
     # create a database connection
     conn = create_connection(database)
     # Use executemany() to insert multiple records at a time
-    query = conn.execute("INSERT INTO network (cluster_id,throughput,latency, jitter, date) VALUES (?,?,?,?,?)",metrics)
+    query = conn.execute(
+        "INSERT INTO network (cluster_id,throughput,latency, jitter, date) VALUES (?,?,?,?,?)", metrics)
 
     for row in conn.execute('SELECT * FROM network'):
         print(row)
@@ -91,6 +95,7 @@ def insert_network(metrics) -> Result:
         return Success(True)
     else:
         return Success(False)
+
 
 @method
 def insert_availability(metrics) -> Result:
@@ -98,7 +103,8 @@ def insert_availability(metrics) -> Result:
     # create a database connection
     conn = create_connection(database)
     # Use executemany() to insert multiple records at a time
-    query = conn.execute("INSERT INTO availability (cluster_id,availability_score,date) VALUES (?,?,?)",metrics)
+    query = conn.execute(
+        "INSERT INTO availability (cluster_id,availability_score,date) VALUES (?,?,?)", metrics)
 
     for row in conn.execute('SELECT * FROM network'):
         print(row)
@@ -109,8 +115,9 @@ def insert_availability(metrics) -> Result:
     else:
         return Success(False)
 
+
 def create_table(conn):
-    try:   
+    try:
         # create network table
         sqlite_create_network_table_query = '''CREATE TABLE IF NOT EXISTS network (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,7 +133,7 @@ def create_table(conn):
         conn.commit()
         print("SQLite network table created")
 
-        # create availability table 
+        # create availability table
         sqlite_create_availability_table_query = '''CREATE TABLE IF NOT EXISTS availability (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     cluster_id INTEGER NOT NULL,
@@ -159,6 +166,7 @@ def main():
         create_table(conn)
 
 
+port = os.getenv('PORT', 5141)
 if __name__ == "__main__":
     main()
-    serve('localhost', 5141)
+    serve('localhost', port)
