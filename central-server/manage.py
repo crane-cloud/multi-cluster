@@ -5,7 +5,7 @@ from server import app
 
 # import models
 from app.models.user import User
-from app.models.product import Product
+from app.models.cluster import Cluster
 
 
 # register app and db with migration class
