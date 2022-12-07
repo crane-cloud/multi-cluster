@@ -1,0 +1,34 @@
+version: "3"
+services:
+  database:
+    restart: no
+    image: postgres:10.8-alpine
+    container_name: multicluster-central-postgres-db
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_DB: multicluster_db
+    ports:
+      - "4300:5432"
+    # volumes:
+    #   - db-data:/var/lib/postgresql/data
+  multicluster-central-api:
+    restart: no
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: multicluster-central-api
+    environment:
+      DATABASE_URI:
+      FLASK_APP_SECRET:
+      KUBE_HOST:
+      KUBE_TOKEN:
+      KUBE_CERT:
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    links:
+      - multicluster-central-postgres-db
+
+# volumes:
+#   db-data:

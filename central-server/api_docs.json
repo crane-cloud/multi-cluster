@@ -1,0 +1,373 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "My App backend API",
+      "description": "Api for My App",
+      "version": "1.0.0",
+      "license": {
+        "name": "Apache 2.0",
+        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      }
+    },
+    "basePath": "/",
+    "paths": {
+      "/users": {
+        "get": {
+          "tags": ["users"],
+          "summary": "Gets all Users",
+          "produces": ["application/json"],
+          "parameters":[
+            {
+              "in": "header",
+              "name": "Authorization",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully gets Users"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "post": {
+          "tags": ["users"],
+          "summary": "Sign up a new user",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "User params",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/user_signup_credentials"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully signed up a new User"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/users/{user_id}": {
+        "get": {
+          "tags": ["users"],
+          "summary": "Gets a single user",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "user_id",
+              "required": true
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully gets a single User"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "patch": {
+          "tags": ["users"],
+          "summary": "Updates user info",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "header",
+              "name": "Authorization",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "in": "path",
+              "name": "user_id",
+              "required": true
+            },
+            {
+              "in": "body",
+              "name": "User params",
+              "required": false,
+              "schema": {
+                "$ref": "#/definitions/user"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully updates existing User"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/users/login": {
+        "post": {
+          "tags": ["users"],
+          "summary": "Login User",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "User params",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/user_login_credentials"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully Logged In User"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/users/reset_password": {
+        "post": {
+          "tags": ["users"],
+          "summary": "Reset User Password",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "User params",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/user_login_credentials"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully Logged In User"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/products": {
+        "get": {
+          "tags": ["products"],
+          "summary": "Gets all Products",
+          "produces": ["application/json"],
+          "responses": {
+            "201": {
+              "description": "Successfully gets Products"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "post": {
+          "tags": ["products"],
+          "summary": "Add a new product",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "Product params",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully signed up a new Product"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/products/{product_id}": {
+        "get": {
+          "tags": ["products"],
+          "summary": "Gets a single product",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "product_id",
+              "required": true
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully gets a single Product"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "patch": {
+          "tags": ["products"],
+          "summary": "Updates product info",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "product_id",
+              "required": true
+            },
+            {
+              "in": "body",
+              "name": "Product params",
+              "required": false,
+              "schema": {
+                "$ref": "#/definitions/product"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully updates existing Product"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "user_signup_credentials": {
+        "type": "object",
+        "required": ["username", "password", "email"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "user"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          }
+        }
+      },
+      "user_login_credentials": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          }
+        }
+      },
+      "user": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "test user"
+          },
+          "email": {
+            "type": "email",
+            "example": "user@email.com"
+          }
+        }
+      },
+      "product": {
+        "type": "object",
+        "required": ["name", "quantity", "price"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "test product"
+          },
+          "size": {
+            "type": "integer",
+            "example": 10
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 20
+          },
+          "price": {
+            "type": "integer",
+            "example": 1000
+          }
+        }
+      }
+    }
+  }
+  
