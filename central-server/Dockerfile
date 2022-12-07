@@ -16,4 +16,4 @@ COPY . /app
 EXPOSE 5000
 
 # run when the container launches
-CMD ["/app/scripts/start.sh"]
+CMD ["bash", "/app/scripts/start.sh"]

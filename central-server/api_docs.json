@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-      "title": "My App backend API",
-      "description": "Api for My App",
+      "title": "Multicluster backend API",
+      "description": "Api for Multicluster central App",
       "version": "1.0.0",
       "license": {
         "name": "Apache 2.0",
