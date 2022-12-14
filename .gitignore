@@ -1,3 +1,9 @@
+# Python ignore
+venv/
+.vscode/
+.DS_Store
+*.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -32,11 +38,6 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
-
-# databases
-*.sqlite3
-*.db
-
 
 # Installer logs
 pip-log.txt

@@ -31,5 +31,11 @@ services:
     links:
       - multicluster-central-database
 
+# run on network called multicluster
+networks:
+  multicluster:
+    external: true
+    
+
 # volumes:
 #   db-data:
