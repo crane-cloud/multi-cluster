@@ -5,7 +5,7 @@ from sqlite3 import Error
 import re
 import json
 import os
-# from discovery import request_to_join_network
+from discovery import check_cluster_info
 
 
 @method
@@ -119,6 +119,18 @@ def insert_availability(metrics) -> Result:
 
 def create_table(conn):
     try:
+        # Cluster information table
+        sqlite_create_cluster_table_query = '''CREATE TABLE IF NOT EXISTS cluster_info (
+                                    cluster_id TEXT PRIMARY KEY,
+                                    name TEXT NOT NULL,
+                                    ip_address TEXT NOT NULL,
+                                    port INTEGER NOT NULL);
+                                    '''
+        cursor = conn.cursor()
+        print("Successfully Connected to SQLite")
+        cursor.execute(sqlite_create_cluster_table_query)
+        conn.commit()
+        print("SQLite cluster table created")
         # create network table
         sqlite_create_network_table_query = '''CREATE TABLE IF NOT EXISTS network (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,7 +178,8 @@ def main():
         print("first create table")
         create_table(conn)
 
-    # request_to_join_network()
+    cluster_info = check_cluster_info()
+    print(cluster_info)
 
 
 port = int(os.getenv('PORT', 5141))
