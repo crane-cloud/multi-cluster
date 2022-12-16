@@ -120,15 +120,23 @@ def insert_availability(metrics) -> Result:
 def create_table(conn):
     try:
         # Cluster information table
-        sqlite_create_cluster_table_query = '''CREATE TABLE IF NOT EXISTS cluster_info (
+        create_cluster_info_table_query = '''CREATE TABLE IF NOT EXISTS cluster_info (
                                     cluster_id TEXT PRIMARY KEY,
                                     name TEXT NOT NULL,
                                     ip_address TEXT NOT NULL,
                                     port INTEGER NOT NULL);
                                     '''
+        create_clusters_table_query = '''CREATE TABLE IF NOT EXISTS clusters (
+                                    cluster_id TEXT PRIMARY KEY,
+                                    name TEXT NOT NULL,
+                                    ip_address TEXT NOT NULL,
+                                    port INTEGER NOT NULL);
+                                    '''
+                
         cursor = conn.cursor()
         print("Successfully Connected to SQLite")
-        cursor.execute(sqlite_create_cluster_table_query)
+        cursor.execute(create_cluster_info_table_query)
+        cursor.execute(create_clusters_table_query)
         conn.commit()
         print("SQLite cluster table created")
         # create network table

@@ -117,7 +117,34 @@
               "description": "Server error"
             }
           }
+        },
+        "delete": {
+          "tags": ["clusters"],
+          "summary": "Deletes a cluster",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "cluster_id",
+              "required": true
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully deletes a Cluster"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
         }
+
       }
     },
     "definitions": {

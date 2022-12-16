@@ -13,7 +13,6 @@ class ClusterView(Resource):
         cluster_schema = ClusterSchema()
 
         cluster_data = request.get_json()
-
         validated_cluster_data, errors = cluster_schema.load(cluster_data)
 
         if errors:
@@ -37,15 +36,21 @@ class ClusterView(Resource):
             ip_address=validated_cluster_data["ip_address"])
 
         if existing_cluster:
-            return dict(status='fail',
-                        message=f'Cluster with ip address {validated_cluster_data["ip_address"]} already exists'), 409
+            # update the cluster
+            updated_cluster = Cluster.update(
+                existing_cluster, **validated_cluster_data)
 
-        cluster = Cluster(**validated_cluster_data)
+            if not updated_cluster:
+                return dict(status='fail', message='Internal Server Error'), 500
 
-        saved_cluster = cluster.save()
+        else:
+            # create a new cluster
+            cluster = Cluster(**validated_cluster_data)
 
-        if not saved_cluster:
-            return dict(status='fail', message='Internal Server Error'), 500
+            saved_cluster = cluster.save()
+
+            if not saved_cluster:
+                return dict(status='fail', message='Internal Server Error'), 500
 
         # get all clusters
         clusters = Cluster.find_all()
@@ -112,11 +117,11 @@ class ClusterDetailView(Resource):
         if not cluster:
             return dict(status="fail", message=f"Cluster with id {cluster_id} not found"), 404
 
-        #check for duplication
+        # check for duplication
         if "name" in validated_update_data:
             existing_cluster = Cluster.find_first(
                 name=validated_update_data["name"])
-        
+
             if existing_cluster and existing_cluster.id != cluster.id:
                 return dict(status='fail',
                             message=f'Cluster with name {validated_update_data["name"]} already exists'), 409
@@ -134,7 +139,6 @@ class ClusterDetailView(Resource):
             if existing_cluster and existing_cluster.id != cluster.id:
                 return dict(status='fail',
                             message=f'Cluster with ip address {validated_update_data["ip_address"]} already exists'), 409
-
 
         updated_cluster = Cluster.update(cluster, **validated_update_data)
 
