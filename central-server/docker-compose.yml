@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: multicluster_db
     ports:
       - "4300:5432"
+    networks:
+      - multicluster
     # volumes:
     #   - db-data:/var/lib/postgresql/data
   multicluster-central-api:
@@ -30,12 +32,13 @@ services:
       - .:/app
     links:
       - multicluster-central-database
+    networks:
+      - multicluster
 
 # run on network called multicluster
 networks:
   multicluster:
     external: true
-    
 
 # volumes:
 #   db-data:

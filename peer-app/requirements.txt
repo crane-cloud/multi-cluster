@@ -25,7 +25,6 @@ cachetools==5.2.0
 certifi==2022.9.24
 charset-normalizer==2.1.1
 docopt==0.6.2
-google-auth==2.14.0
 iperf3==0.1.11
 kubernetes==25.3.0
 oauthlib==3.2.2

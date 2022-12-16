@@ -7,47 +7,74 @@ services:
       dockerfile: Dockerfile
     restart: "no"
     container_name: cluster-server
-    volumes:
-      - .:/app
     environment:
-      CENTRAL_SERVER_LINK: http://multicluster-central-api
+      CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
       PORT: 5141
+      TEST_PORT: 5100
+      HOST: '0.0.0.0'
     ports:
-      - 5141:5141
-    command: ["python", "server.py"]
-  
-  # cluster-client:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   restart: unless-stopped
-  #   container_name: cluster-client
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - 5140:5141
-  #   depends_on:
-  #     - cluster-server
-  #   command: ["python", "client.py"]
-  
-  # cluster-client-2:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   restart: unless-stopped
-  #   container_name: cluster-client-2
-  #   volumes:
-  #     - .:/app
-  #   environment:
-  #     - PORT=5500
-  #   ports:
-  #     - 5500:5500
-  #   depends_on:
-  #     - cluster-server
-  #   command: ["python", "client.py"]
+      - 5141:5100
+
+    command: ["python", "starter.py", "-v"]
+
+    external_links:
+      - multicluster-central-api
+    networks:
+      - multicluster
+    volumes:
+      - muticlusterserver:/data
+
+  cluster-server-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    container_name: cluster-server-2
+    environment:
+      CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
+      PORT: 5142
+      TEST_PORT: 5101
+      HOST: '0.0.0.0'
+    ports:
+      - 5142:5101
+
+    command: ["python", "starter.py", "-v"]
+
+    external_links:
+      - multicluster-central-api
+    networks:
+      - multicluster
+    volumes:
+      - muticlusterserver2:/data
+
+  cluster-server-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    container_name: cluster-server-3
+    environment:
+      CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
+      PORT: 5143
+      TEST_PORT: 5102
+      HOST: '0.0.0.0'
+    ports:
+      - 5144:5102
+
+    command: ["python", "starter.py", "-v"]
+
+    external_links:
+      - multicluster-central-api
+    networks:
+      - multicluster
+    volumes:
+      - muticlusterserver3:/data
   
 networks:
   multicluster:
     external: true
-# volumes:
-#   postgres_data:
+
+volumes:
+  muticlusterserver:
+  muticlusterserver2:
+  muticlusterserver3:

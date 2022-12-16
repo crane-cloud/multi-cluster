@@ -132,7 +132,7 @@ def create_table(conn):
                                     ip_address TEXT NOT NULL,
                                     port INTEGER NOT NULL);
                                     '''
-                
+
         cursor = conn.cursor()
         print("Successfully Connected to SQLite")
         cursor.execute(create_cluster_info_table_query)
@@ -191,6 +191,8 @@ def main():
 
 
 port = int(os.getenv('PORT', 5141))
+host = os.getenv('HOST', 'localhost')
+print('Port: ', port)
 if __name__ == "__main__":
     main()
-    serve('localhost', port)
+    serve(host, port)

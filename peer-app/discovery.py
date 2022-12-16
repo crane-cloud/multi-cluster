@@ -30,6 +30,7 @@ def generate_cluster_info():
 
 
 def check_cluster_info():
+    print('Getting cluster info')
     url = f"{os.getenv('CENTRAL_SERVER_LINK')}/clusters"
     cluster_info = get_cluster_info()
     # if cluster_info exits, return it
