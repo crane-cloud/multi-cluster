@@ -1,5 +1,10 @@
 # Multicluster Application
 
+## Create the multicluster network
+```bash
+docker network create multicluster
+```
+This enables the containers to communicate with each other.
 
 ## Run central server
 

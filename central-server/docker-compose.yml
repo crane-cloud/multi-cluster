@@ -5,7 +5,7 @@ services:
     image: postgres:10.8-alpine
     container_name: multicluster-central-database
     environment:
-      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_USER: postgres
       POSTGRES_DB: multicluster_db
     ports:
       - "4300:5432"
@@ -20,10 +20,10 @@ services:
       dockerfile: Dockerfile
     container_name: multicluster-central-api
     environment:
-      DATABASE_URI:
-      FLASK_APP_SECRET:
+      DATABASE_URI: postgresql://postgres:postgres@multicluster-central-database:5432/multicluster_db
+      FLASK_APP_SECRET: qY2i691SX2sEuZ7LUjY480RS48mw5qCeUiyV0i0vzmg
       FLASK_ENV: development
-      DATABASE_USER:
+      DATABASE_USER: postgres
       FLASK_APP: server.py
       FLASK_RUN_PORT: 5000
     ports:
@@ -31,6 +31,8 @@ services:
     volumes:
       - .:/app
     links:
+      - multicluster-central-database
+    depends_on:
       - multicluster-central-database
     networks:
       - multicluster
