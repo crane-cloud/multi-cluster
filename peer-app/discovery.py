@@ -23,8 +23,8 @@ def create_connection(db_file):
 
 def generate_cluster_info():
     cluster_info = {"cluster_id": str(random.randint(000000000, 9999999999)),
-                    "name": f"clt-{os.getenv('CLUSTER_NAME', get_random_string(4))}",
-                    "ip_address": "127.0.0.2",
+                    "name": os.getenv('CLUSTER_NAME', f"clt-{get_random_string(4)}"),
+                    "ip_address": os.getenv('HOST_IP', "127.0.0.2"),
                     "port": os.getenv('PORT', 5141)}
     return cluster_info
 
@@ -33,7 +33,7 @@ def check_cluster_info():
     print('Getting cluster info')
     url = f"{os.getenv('CENTRAL_SERVER_LINK')}/clusters"
     cluster_info = get_cluster_info()
-    # if cluster_info exits, return it
+
     if cluster_info:
         return cluster_info
 
