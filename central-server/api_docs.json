@@ -1,0 +1,179 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "Multicluster backend API",
+      "description": "Api for Multicluster central App",
+      "version": "1.0.0",
+      "license": {
+        "name": "Apache 2.0",
+        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      }
+    },
+    "basePath": "/",
+    "paths": {
+      "/clusters": {
+        "get": {
+          "tags": ["clusters"],
+          "summary": "Gets all Clusters",
+          "produces": ["application/json"],
+          "responses": {
+            "201": {
+              "description": "Successfully gets Clusters"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "post": {
+          "tags": ["clusters"],
+          "summary": "Add a new cluster",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "Cluster params",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/cluster"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully signed up a new Cluster"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+      },
+      "/clusters/{cluster_id}": {
+        "get": {
+          "tags": ["clusters"],
+          "summary": "Gets a single cluster",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "cluster_id",
+              "required": true
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully gets a single Cluster"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "patch": {
+          "tags": ["clusters"],
+          "summary": "Updates cluster info",
+          "consumes": ["application/json"],
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "cluster_id",
+              "required": true
+            },
+            {
+              "in": "body",
+              "name": "Cluster params",
+              "required": false,
+              "schema": {
+                "$ref": "#/definitions/cluster"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully updates existing Cluster"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        },
+        "delete": {
+          "tags": ["clusters"],
+          "summary": "Deletes a cluster",
+          "produces": ["application/json"],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "cluster_id",
+              "required": true
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Successfully deletes a Cluster"
+            },
+            "401": {
+              "description": "invalid input, object invalid"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "500": {
+              "description": "Server error"
+            }
+          }
+        }
+
+      }
+    },
+    "definitions": {
+      "cluster": {
+        "type": "object",
+        "required": ["name", "cluster_id", "port","ip_address"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "test cluster"
+          },
+          "cluster_id": {
+            "type": "string",
+            "example": "12342133231"
+          },
+          "port": {
+            "type": "integer",
+            "example": 2000
+          },
+          "ip_address": {
+            "type": "string",
+            "example": "192.35.324.1"
+          },
+          "chosen_cluster": {
+            "type": "string",
+            "example": "1133245234"
+          }
+        }
+      }
+    }
+  }
+  

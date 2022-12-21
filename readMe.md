@@ -1,21 +1,48 @@
-## MULTI-CLUSTER MONITOR APP
-
-- A python app to monitor(scrape and store) metrics about clusters in a multi-cluster setup.
+# Multicluster Application
 
 
-## TO SETUP
+## Run central server
 
-1. Clone this repository `git clone https://github.com/crane-cloud/multi-cluster-monitor.git`
-2. Create a virtual environment 
+```bash
+cd central-server
+```
+Start the server:
+```bash
+make start
+```
 
-    - App was developed with `Python 3.6`.
+## Run the Peer application
 
-    - Make sure you have `pip` installed on your machine.
+```bash
+cd peer-app
+```
+Start the servers
+```bash
+make start
+```
 
-    - Create a pip virtual environment you can call it `venv`
+This will start 3 servers as defined in the docker-compose file.
 
-    - Activate the virtual environment: `. venv/bin/activate`
+## To start the peer application
 
-3. Install required dependencies from requirements.txt file `pip install -r requirements.txt`
-4. Run server  `python server.py`
-5. Run client  `python client.py`
+SSH into any of the peer-apps containers
+```bash
+docker exec -it <container-name> /bin/bash
+```
+Run the following command
+```bash
+python server.py
+```
+This should initialise cluster discovery and setup the cluster.
+
+
+## To kill the containers and volumes to have a fresh start
+
+```bash
+cd peer-app
+```
+Run the following command
+```bash
+make clean
+```
+This will kill all the containers and remove the volumes created by the docker-compose file so that you can begin again with a fresh start.
