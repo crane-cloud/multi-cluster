@@ -1,5 +1,8 @@
 FROM python:3.8-slim-buster
 
+RUN apt update
+RUN apt install -y iperf3
+
 WORKDIR /app
 
 COPY requirements.txt requirements.txt
