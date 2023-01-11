@@ -78,7 +78,6 @@ def select_metrics_by_cluster(cluster_id, metric_type) -> Result:
 
     return Success(result)
 
-
 @method
 def insert_network(metrics) -> Result:
     database = "metrics.db"
@@ -142,7 +141,7 @@ def create_table(conn):
         # create network table
         sqlite_create_network_table_query = '''CREATE TABLE IF NOT EXISTS network (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    cluster_id INTEGER NOT NULL,
+                                    cluster_id TEXT NOT NULL,
                                     throughput REAL NOT NULL,
                                     latency REAL NOT NULL,
                                     jitter REAL NOT NULL,
@@ -157,7 +156,7 @@ def create_table(conn):
         # create availability table
         sqlite_create_availability_table_query = '''CREATE TABLE IF NOT EXISTS availability (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    cluster_id INTEGER NOT NULL,
+                                    cluster_id TEXT NOT NULL,
                                     availability_score REAL NOT NULL,
                                     date datetime);'''
 
@@ -190,7 +189,7 @@ def main():
     print(cluster_info)
 
 
-port = int(os.getenv('PORT', 5141))
+port = int(os.getenv('PORT', 5100))
 host = os.getenv('HOST', 'localhost')
 print('Port: ', port)
 if __name__ == "__main__":
