@@ -14,14 +14,9 @@ def get_latency(host,port):
     latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
     print("Latency Test results:")
     print(latency_result)
-    return round(latency_result[0],3)
-
-def get_jitter(host,port):
-    latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
-    print("Latency Test results:")
-    print(latency_result)
-    print('')
-    print('Jitter from latency values, (ms)')
+    return latency_result
+#faster testing
+def get_jitter(latency_result):
     jitter_result = jitterCalculator(latency_result)
     print(jitter_result)
     return round(jitter_result,3)

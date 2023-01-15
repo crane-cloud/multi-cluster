@@ -123,12 +123,14 @@ def create_table(conn):
                                     cluster_id TEXT PRIMARY KEY,
                                     name TEXT NOT NULL,
                                     ip_address TEXT NOT NULL,
+                                    chosen_cluster TEXT NOT NULL,
                                     port INTEGER NOT NULL);
                                     '''
         create_clusters_table_query = '''CREATE TABLE IF NOT EXISTS clusters (
                                     cluster_id TEXT PRIMARY KEY,
                                     name TEXT NOT NULL,
                                     ip_address TEXT NOT NULL,
+                                    chosen_cluster TEXT NOT NULL,
                                     port INTEGER NOT NULL);
                                     '''
 
