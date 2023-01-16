@@ -24,7 +24,8 @@ def create_connection(db_file):
 def generate_cluster_info():
     cluster_info = {"cluster_id": str(random.randint(000000000, 9999999999)),
                     "name": os.getenv('CLUSTER_NAME', f"clt-{get_random_string(4)}"),
-                    "ip_address": os.getenv('HOST_IP', "127.0.0.2"),
+                    "ip_address": os.getenv('HOST_IP', "127.0.0.2"), 
+                    "chosen_cluster": "",
                     "port": os.getenv('PORT', 5141)}
     return cluster_info
 
@@ -48,7 +49,7 @@ def check_cluster_info():
         elif respose.status_code == 409:
             print("Error: Cluster already exists")
             print(respose.text)
-            return False
+            return None
         else:
             print(respose.text)
             print("Error joining network")
@@ -72,10 +73,11 @@ def save_cluster_info(cluster_info):
     data_tuple = (cluster_info["cluster_id"],
                   cluster_info["name"],
                   cluster_info["ip_address"],
+                  cluster_info["chosen_cluster"],
                   cluster_info["port"])
 
     conn.execute(
-        "INSERT INTO cluster_info (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple)
+        "INSERT INTO cluster_info (cluster_id, name, ip_address, chosen_cluster, port) VALUES (?,?,?,?,?);", data_tuple)
     conn.commit()
 
     return get_cluster_info()
@@ -85,20 +87,25 @@ def get_cluster_info():
     database = "metrics.db"
     # create a database connection
     conn = create_connection(database)
-    query = conn.execute(
-        "SELECT * FROM cluster_info")
-    conn.commit()
-    cluster = query.fetchone()
-    if cluster:
-        # Fetch and update clusters list
-        clusters = update_clusters_list(cluster[0])
-        cluster_info = {"cluster_id": cluster[0],
-                        "name": cluster[1],
-                        "ip_address": cluster[2],
-                        "port": cluster[3]}
-        return {'current_cluster': cluster_info, 'clusters_list': clusters}
-    else:
-        return None
+    try:
+        query = conn.execute(
+            "SELECT * FROM cluster_info")
+        conn.commit()
+        cluster = query.fetchone()
+        if cluster:
+            # Fetch and update clusters list
+            clusters = update_clusters_list(cluster[0])
+            cluster_info = {"cluster_id": cluster[0],
+                            "name": cluster[1],
+                            "ip_address": cluster[2],
+                            "chosen_cluster": cluster[3],
+                            "port": cluster[4]}
+            return {'current_cluster': cluster_info, 'clusters_list': clusters}
+        else:
+            return None
+    except Exception as e:
+        print("Error: ", e)
+        return None    
 
 
 def update_clusters_list(current_cluster_id):
@@ -128,15 +135,16 @@ def update_clusters_list(current_cluster_id):
         data_tuple = (cluster["cluster_id"],
                       cluster["name"],
                       cluster["ip_address"],
+                      cluster["chosen_cluster"],
                       cluster["port"])
         try:
             conn.execute(
-                "INSERT INTO clusters (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple)
+                "INSERT INTO clusters (cluster_id, name, ip_address, chosen_cluster, port) VALUES (?,?,?,?,?);", data_tuple)
             conn.commit()
         except sqlite3.IntegrityError as e:
             # Update info of the cluster if it already exists
             conn.execute(
-                "UPDATE clusters SET name = ?, ip_address = ?, port = ? WHERE cluster_id = ?;", (cluster["name"], cluster["ip_address"], cluster["port"], cluster["cluster_id"]))
+                "UPDATE clusters SET name = ?, ip_address = ?, chosen_cluster = ?, port = ? WHERE cluster_id = ?;", (cluster["name"], cluster["ip_address"], cluster["port"], cluster["chosen_cluster"], cluster["cluster_id"]))
         except Exception as e:
             print(f'Error: {e}')
             return None
@@ -145,3 +153,32 @@ def update_clusters_list(current_cluster_id):
     conn.commit()
     clusters = get_clusters_query.fetchall()
     return clusters
+
+def update_leader_on_cluster(cluster_id,chosen_cluster):
+    database = "metrics.db"
+    # create a database connection
+    print("Updating cluster leader")
+    conn = create_connection(database)
+    try:
+        conn.execute("UPDATE cluster_info SET chosen_cluster = ? WHERE cluster_id = ?", (chosen_cluster,cluster_id))
+        conn.commit()
+        print('cluster leader updated')
+        return True
+    except Exception as e:
+        print(f'Error: {e}')
+        return None
+    
+
+def update_server_leader(cluster_id,leader_id):
+    url = f"{os.getenv('CENTRAL_SERVER_LINK')}/clusters/{cluster_id}"
+    try:
+        respose = requests.patch(url,json={"chosen_cluster": leader_id,})
+        if respose.status_code == 200:
+            print("Successfully update clusters")
+        else:
+            print("Error updating central server cluster information")
+            print(respose.text)
+            return None
+    except Exception as e:
+        print("Error: ", e)
+        return None
