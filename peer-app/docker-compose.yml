@@ -10,7 +10,7 @@ services:
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
       PORT: 5100
-      HOST_IP: 127.0.0.1
+      HOST_IP: cluster-server
       TEST_PORT: 5100
       CLUSTER_NAME: cluster-server
       HOST: '0.0.0.0'
@@ -35,7 +35,7 @@ services:
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
       PORT: 5100
-      HOST_IP: localhost
+      HOST_IP: cluster-server-2
       TEST_PORT: 5101
       CLUSTER_NAME: cluster-server-2
       HOST: '0.0.0.0'
@@ -60,7 +60,7 @@ services:
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
       PORT: 5100
-      HOST_IP: 0.0.0.0
+      HOST_IP: cluster-server-3
       TEST_PORT: 5102
       CLUSTER_NAME: cluster-server-3
       HOST: '0.0.0.0'

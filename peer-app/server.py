@@ -7,6 +7,11 @@ import json
 import os
 from discovery import check_cluster_info
 
+@method
+def check_availability() -> Result:
+    result = {"data": "Cluster on", "message": "success", "status": 200}
+
+    return Success(result)
 
 @method
 def create_connection(db_file):

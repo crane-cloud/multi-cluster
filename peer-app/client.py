@@ -3,7 +3,8 @@ import sys
 from datetime import datetime
 from latency import get_jitter, get_latency
 from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
-# from throughput import get_throughtput
+import requests
+from throughput import get_throughtput
 import os
 
 cluster_list = [{"id": 1, "cluster_name": "cis-lib1", "ip": "196.32.212.213:5141"},
@@ -31,6 +32,7 @@ def main():
         # availability_score = 0
         # date = '28-10-2022'
         # print("Insert availability data..")
+        
         # metrics = (cluster_id, availability_score, date)
         # print(server.insert_availability(metrics))
 
@@ -62,14 +64,35 @@ def main():
 def store_metrics(server, host, port, cluster_id):
     latency = get_latency(host,port)
     jitter = get_jitter(host,port)
-    date = '11-01-2023'
-    # throughput = get_throughtput()
-    throughput = 20
+    date = '18-01-2023'
+    print("Get throughput.....")
+    # throughput = get_throughtput(host)
+    throughput= 20
     metrics = (cluster_id, throughput,latency,jitter, date)
     print(metrics)
     print("Inserting network data: latency, throughput & jitter..")
     resp = server.insert_network(metrics)
     print(resp)
+
+    # insert availability metrics
+    print("Handle availability....")
+    availability_score = check_availability(host,port)
+    print(availability_score)
+    metrics = (cluster_id, availability_score, date)
+    print(metrics)
+    print(server.insert_availability(metrics))
+
+def check_availability(host,port):
+    try:
+        serv_conn = Server("http://"+host+":"+str(port))
+        if serv_conn:
+            resp = serv_conn.check_availability()
+        # r =requests.post("http://"+host+":"+str(port))
+        print(resp)
+        if resp["status"] == 200:
+            return 1
+    except:
+        return 0
 
 
 if __name__ == '__main__':
