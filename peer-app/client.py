@@ -56,6 +56,10 @@ def main():
         # print(save_cluster_info(cluster_info))
         # generate_cluster_info()
 
+        # Get server metrics
+        print("Get server metrics")
+        print(server.get_server_metrics())
+
 
     except:
         print("Error: ", sys.exc_info())
@@ -66,8 +70,8 @@ def store_metrics(server, host, port, cluster_id):
     jitter = get_jitter(host,port)
     date = '18-01-2023'
     print("Get throughput.....")
-    # throughput = get_throughtput(host)
-    throughput= 20
+    throughput = get_throughtput(host)
+    print(throughput)
     metrics = (cluster_id, throughput,latency,jitter, date)
     print(metrics)
     print("Inserting network data: latency, throughput & jitter..")

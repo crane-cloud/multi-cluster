@@ -16,6 +16,7 @@ services:
       HOST: '0.0.0.0'
     ports:
       - 5141:5100
+      - 5203:5201
 
     command: ["python", "server.py", "-v"]
 
@@ -41,6 +42,7 @@ services:
       HOST: '0.0.0.0'
     ports:
       - 5142:5100
+      - 5202:5201
 
     command: ["python", "server.py", "-v"] 
 
@@ -66,6 +68,7 @@ services:
       HOST: '0.0.0.0'
     ports:
       - 5144:5100
+      - 5201:5201
 
     command: ["python", "server.py", "-v"]
 

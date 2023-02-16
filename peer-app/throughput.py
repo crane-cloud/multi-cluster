@@ -5,7 +5,7 @@ client = iperf3.Client()
 #lsk
 def get_throughtput(host):
     client.server_hostname = host
-    client.port = 32100
+    client.port = 5201
     client.protocol = 'tcp'
 
 

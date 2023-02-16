@@ -6,6 +6,7 @@ import re
 import json
 import os
 from discovery import check_cluster_info
+from metricsTest import getCPU, getMemory
 
 @method
 def check_availability() -> Result:
@@ -28,6 +29,19 @@ def create_connection(db_file):
 
     return conn
 
+@method
+def get_server_resources() -> Result:
+    cpu = getCPU()
+    memory = getMemory()
+
+    resources = {"cpu":cpu, "memory": memory}
+
+    if resources:
+        result = {"data": resources, "message": "success", "status": 201}
+    else:
+        result = {"data": Error, "message": "failed", "status": 500}
+
+    return Success(result)
 
 @method
 def select_all_network_metrics() -> Result:
