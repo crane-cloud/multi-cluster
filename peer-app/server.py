@@ -23,7 +23,6 @@ def create_connection(db_file):
 
     return conn
 
-
 @method
 def select_all_network_metrics() -> Result:
     database = "metrics.db"
@@ -48,7 +47,6 @@ def select_all_network_metrics() -> Result:
         result = {"network data": Error, "message": "failed", "status": 500}
 
     return Success(result)
-
 
 @method
 def select_metrics_by_cluster(cluster_id, metric_type) -> Result:
@@ -78,7 +76,6 @@ def select_metrics_by_cluster(cluster_id, metric_type) -> Result:
 
     return Success(result)
 
-
 @method
 def insert_network(metrics) -> Result:
     database = "metrics.db"
@@ -96,7 +93,6 @@ def insert_network(metrics) -> Result:
         return Success(True)
     else:
         return Success(False)
-
 
 @method
 def insert_availability(metrics) -> Result:
@@ -116,6 +112,12 @@ def insert_availability(metrics) -> Result:
     else:
         return Success(False)
 
+#add rpc method for profile return verdict
+@method
+def peer_message_response(port):
+    print('from:', port)
+    current_port =  int(os.getenv('PORT'))
+    return 2222
 
 def create_table(conn):
     try:
@@ -176,7 +178,6 @@ def create_table(conn):
         #     conn.close()
         print("sqlite connection is not closed")
 
-
 def main():
     database = "metrics.db"
 
@@ -193,6 +194,7 @@ def main():
 port = int(os.getenv('PORT', 5141))
 host = os.getenv('HOST', 'localhost')
 print('Port: ', port)
+print('host: ', host)
 if __name__ == "__main__":
     main()
     serve(host, port)
