@@ -1,14 +1,12 @@
 from jsonrpclib import Server
 import sys
 from datetime import datetime
-from latency import get_jitter, get_latency
+from metrics import get_jitter, get_latency
 from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
 import requests
-from throughput import get_throughtput
+from metrics import get_throughtput
 import os
 
-cluster_list = [{"id": 1, "cluster_name": "cis-lib1", "ip": "196.32.212.213:5141"},
-                {"id": 2, "cluster_name": "dicts-01", "ip": "http://localhost:5142"}]
 
 
 def main():
@@ -18,25 +16,20 @@ def main():
 
 
     try:
-        # INSERT NETWORK METRICS        
-        clusters_list = get_cluster_info() # fetch and print cluster list 
-        print(clusters_list)
+        # PERFORM CLUSTER DISCOVERY THEN INSERT NETWORK & AVAILABILITY METRICS FOR ALL CLUSTERS        
+        # clusters_list = get_cluster_info() # fetch and print cluster list 
+        # print(clusters_list)
         # loop through cluster list while getting metrics on latency and jitter then store them
-        for cluster in clusters_list["clusters_list"]:
-            print(cluster[2])
-            print(cluster[3])
-            store_metrics(server,cluster[2], cluster[3], cluster[0])
+        # for cluster in clusters_list["clusters_list"]:
+        #     print(cluster[2])
+        #     print(cluster[3])
+        #     store_metrics(server,cluster[2], cluster[3], cluster[0])
 
-        # INSERT AVAILABILITY METRICS
-        # cluster_id = 1
-        # availability_score = 0
-        # date = '28-10-2022'
-        # print("Insert availability data..")
-        
-        # metrics = (cluster_id, availability_score, date)
-        # print(server.insert_availability(metrics))
+        # Get server metrics
+        print("Get server metrics")
+        print(server.get_server_resources())
 
-        # RETRIEVE all network METRICS
+        # RETRIEVE all network METRICS 
         # print("GET network data..")
         # print(server.select_all_network_metrics())
 
@@ -46,19 +39,6 @@ def main():
         # print("Retrieve  " + metric_type +
         #       " data for cluster " + str(cluster_id))
         # print(server.select_metrics_by_cluster(cluster_id, metric_type))
-
-        # Retrieve all cluster info from local db 
-        # cluster_id=1
-        # name="staging-cluster"
-        # ip_address="196.32.212.213"
-        # port=6443
-        # cluster_info = dict(cluster_id=2,name="staging-cluster", ip_address="localhost", port=5142)
-        # print(save_cluster_info(cluster_info))
-        # generate_cluster_info()
-
-        # Get server metrics
-        print("Get server metrics")
-        print(server.get_server_metrics())
 
 
     except:

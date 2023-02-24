@@ -1,8 +1,61 @@
+import os
+import psutil
+from tcp_latency import measure_latency
 import iperf3
-#import json
+
+
+
+# Pick CPU, Memory and Disk metrics 
+def getCPU():
+    percent_cpu = psutil.cpu_percent()
+    print(percent_cpu)
+    return percent_cpu
+
+
+def getMemory():
+    percent_memory = psutil.virtual_memory().percent
+    return percent_memory
+
+
+def getDisk():
+    tot_disk = psutil.disk_usage(os.sep)
+    percent_disk = psutil.disk_usage(os.sep).percent
+    return tot_disk
+
+
+# Pick latency and gitter values
+
+def jitterCalculator(latencies):
+    # Calculating difference list
+    diff_list = []
+    for x, y in zip(latencies[0::], latencies[1::]):
+        diff_list.append(abs(y-x))
+    sum = 0
+    for i in diff_list:
+        sum = sum + i
+    return (sum/len(diff_list))
+
+def get_latency(host,port):
+    latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
+    print("Latency Test results:")
+    print(latency_result)
+    return round(latency_result[0],3)
+
+def get_jitter(host,port):
+    latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
+    print("Latency Test results:")
+    print(latency_result)
+    print('')
+    print('Jitter from latency values, (ms)')
+    jitter_result = jitterCalculator(latency_result)
+    print(jitter_result)
+    return round(jitter_result,3)
+
+
+
+# Pick throughput metrics
 client = iperf3.Client()
-#client.duration = 1
-#lsk
+
 def get_throughtput(host):
     client.server_hostname = host
     client.port = 5201
@@ -37,5 +90,5 @@ def get_throughtput(host):
         print('  Megabits sent      (mbps)   {0}'.format(result.received_Mbps))
         
 
-
+    client.close()
     return (result.sent_Mbps+ result.received_Mbps)/2 

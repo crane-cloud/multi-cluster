@@ -6,7 +6,7 @@ import re
 import json
 import os
 from discovery import check_cluster_info
-from metricsTest import getCPU, getMemory
+from metrics import getCPU, getMemory, getDisk
 
 @method
 def check_availability() -> Result:
@@ -33,8 +33,9 @@ def create_connection(db_file):
 def get_server_resources() -> Result:
     cpu = getCPU()
     memory = getMemory()
+    disk = getDisk()
 
-    resources = {"cpu":cpu, "memory": memory}
+    resources = {"cpu":cpu, "memory": memory, "disk":disk}
 
     if resources:
         result = {"data": resources, "message": "success", "status": 201}
