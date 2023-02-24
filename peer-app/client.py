@@ -48,11 +48,11 @@ def main():
 def store_metrics(server, host, port, cluster_id):
     latency = get_latency(host,port)
     jitter = get_jitter(host,port)
-    date = '18-01-2023'
+    date = datetime.date
     print("Get throughput.....")
     throughput = get_throughtput(host)
     print(throughput)
-    metrics = (cluster_id, throughput,latency,jitter, date)
+    metrics = (cluster_id, throughput,latency,jitter, str(date))
     print(metrics)
     print("Inserting network data: latency, throughput & jitter..")
     resp = server.insert_network(metrics)
@@ -62,7 +62,7 @@ def store_metrics(server, host, port, cluster_id):
     print("Handle availability....")
     availability_score = check_availability(host,port)
     print(availability_score)
-    metrics = (cluster_id, availability_score, date)
+    metrics = (cluster_id, availability_score, str(date))
     print(metrics)
     print(server.insert_availability(metrics))
 
