@@ -6,7 +6,13 @@ import re
 import json
 import os
 from discovery import check_cluster_info
+from metrics import getCPU, getMemory, getDisk
 
+@method
+def check_availability() -> Result:
+    result = {"data": "Cluster on", "message": "success", "status": 200}
+
+    return Success(result)
 
 @method
 def create_connection(db_file):
@@ -22,6 +28,21 @@ def create_connection(db_file):
         print(e)
 
     return conn
+
+@method
+def get_server_resources() -> Result:
+    cpu = getCPU()
+    memory = getMemory()
+    disk = getDisk()
+
+    resources = {"cpu":cpu, "memory": memory, "disk":disk}
+
+    if resources:
+        result = {"data": resources, "message": "success", "status": 201}
+    else:
+        result = {"data": Error, "message": "failed", "status": 500}
+
+    return Success(result)
 
 @method
 def select_all_network_metrics() -> Result:
@@ -144,7 +165,7 @@ def create_table(conn):
         # create network table
         sqlite_create_network_table_query = '''CREATE TABLE IF NOT EXISTS network (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    cluster_id INTEGER NOT NULL,
+                                    cluster_id TEXT NOT NULL,
                                     throughput REAL NOT NULL,
                                     latency REAL NOT NULL,
                                     jitter REAL NOT NULL,
@@ -159,7 +180,7 @@ def create_table(conn):
         # create availability table
         sqlite_create_availability_table_query = '''CREATE TABLE IF NOT EXISTS availability (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    cluster_id INTEGER NOT NULL,
+                                    cluster_id TEXT NOT NULL,
                                     availability_score REAL NOT NULL,
                                     date datetime);'''
 
@@ -191,7 +212,7 @@ def main():
     print(cluster_info)
 
 
-port = int(os.getenv('PORT', 5141))
+port = int(os.getenv('PORT', 5100))
 host = os.getenv('HOST', 'localhost')
 print('Port: ', port)
 print('host: ', host)

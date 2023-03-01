@@ -9,15 +9,16 @@ services:
     container_name: cluster-server
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
-      PORT: 5141
-      HOST_IP: 127.0.0.1
+      PORT: 5100
+      HOST_IP: cluster-server
       TEST_PORT: 5100
       CLUSTER_NAME: cluster-server
       HOST: '0.0.0.0'
     ports:
       - 5141:5100
+      - 5203:5201
 
-    command: ["python", "starter.py", "-v"]
+    command: ["python", "server.py", "-v"]
 
     external_links:
       - multicluster-central-api
@@ -34,15 +35,16 @@ services:
     container_name: cluster-server-2
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
-      PORT: 5142
-      HOST_IP: 127.0.0.2
+      PORT: 5100
+      HOST_IP: cluster-server-2
       TEST_PORT: 5101
       CLUSTER_NAME: cluster-server-2
       HOST: '0.0.0.0'
     ports:
-      - 5142:5101
+      - 5142:5100
+      - 5202:5201
 
-    command: ["python", "starter.py", "-v"]
+    command: ["python", "server.py", "-v"] 
 
     external_links:
       - multicluster-central-api
@@ -59,15 +61,16 @@ services:
     container_name: cluster-server-3
     environment:
       CENTRAL_SERVER_LINK: http://multicluster-central-api:5000
-      PORT: 5143
-      HOST_IP: 127.0.0.3
+      PORT: 5100
+      HOST_IP: cluster-server-3
       TEST_PORT: 5102
       CLUSTER_NAME: cluster-server-3
       HOST: '0.0.0.0'
     ports:
-      - 5144:5102
+      - 5144:5100
+      - 5201:5201
 
-    command: ["python", "starter.py", "-v"]
+    command: ["python", "server.py", "-v"]
 
     external_links:
       - multicluster-central-api
