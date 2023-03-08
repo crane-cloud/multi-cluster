@@ -9,7 +9,7 @@ help:  ## Display this help
 
 build-image: ## Build docker image
 	@ ${INFO} "Building required docker images"
-	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build cluster-server
+	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer
 	@ ${INFO} "Image succesfully built"
 	@ echo " "
 

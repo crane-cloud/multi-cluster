@@ -1,4 +1,4 @@
-# Multicluster central server
+# viewServer Setup
 
 This holds information that should be shared across all clusters.
 

@@ -1,0 +1,48 @@
+version: '3.5'
+
+services:
+  peer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    #container_name: cluster-server
+    environment:
+      VIEWSERVER: http://view.cranecloud.io:5000
+      CARBON_SERVER: '0.0.0.0'
+      CARBON_PORT: 2003
+      DELAY: 500 #s
+      PORT: 5100
+      HOST_IP: cluster-server
+      TEST_PORT: 5100
+      CLUSTER_NAME: cluster-server
+      HOST: '0.0.0.0'
+    ports:
+      - 5141:5100
+      - 5203:5201
+
+    command: ["python", "init.py", "-v"]
+
+    external_links:
+      - viewserver-api
+    networks:
+      - peer
+    volumes:
+      - peer:/data
+  
+  graphite:
+    restart: always
+    container_name: graphite
+    ports:
+      - 80:80
+      - 2003-2004:2003-2004
+      - 8125:8125/udp
+      - 8126:8126
+
+
+networks:
+  multicluster:
+    external: true
+
+volumes:
+  muticlusterserver:
