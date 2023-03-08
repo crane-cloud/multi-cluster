@@ -4,7 +4,6 @@ services:
     restart: "always"
     image: postgres:14.1-alpine
     container_name: view-db
-    #network_mode: "host"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: cluster
@@ -22,7 +21,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: view-server
-    #network_mode: "host"
     environment:
       DATABASE_URI: postgresql://postgres:254d43d30b513cd0f325924973ab2cf9@view-db:5432/cluster
       FLASK_APP_SECRET: qY2i691SX2sEuZ7LUjY480RS48mw5qCeUiyV0i0vzmg
@@ -32,9 +30,9 @@ services:
       FLASK_APP: server.py
       FLASK_RUN_PORT: 5000
     ports:
-      - "5005:5000"
+      - "5000:5000"
     volumes:
-      - .:/app
+      - ./:/app
 
     depends_on:
       - view-db
@@ -48,4 +46,4 @@ networks:
 
 volumes:
   db:
-    driver: local
+  app:
