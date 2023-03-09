@@ -17,7 +17,7 @@ def create_random_string(length):
 def create_cluster_info():
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
-    port = 5001
+    port = int(os.getenv('PORT'))
     name = hostname + "-peer-" + create_random_string(4)
     cluster_id = ip_address + str(port)
 
@@ -51,7 +51,7 @@ def publish_cluster_info(cluster_info):
             print("Error: ", e)
             return None
     else:
-        print ("No cluster information created")
+        print ("No cluster information provided and/or created")
         return None
 
 
@@ -68,16 +68,8 @@ def main():
     
     publish_cluster_info(cluster_info)
     
-    #print(cluster_info)
-
-#port = int(os.getenv('PORT', 5100))
-#host = os.getenv('HOST', 'localhost')
-
-hostname = socket.gethostname()
-ip_address = socket.gethostbyname(hostname)
-port = 5001
+    print(cluster_info)
 
 if __name__ == "__main__":
     main()
     serve(hostname, port)
-

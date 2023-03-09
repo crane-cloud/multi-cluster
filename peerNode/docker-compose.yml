@@ -1,48 +1,40 @@
-version: '3.5'
+version: '3.8'
 
 services:
+
+  graphite:
+    image: graphiteapp/graphite-statsd:latest
+    restart: always
+    container_name: graphite
+    network_mode: "host"
+    volumes:
+    - ./storage:/opt/graphite/storage
+
+  iperf3:
+    build:
+      context: .
+      dockerfile: Dockerfile-iperf3
+    restart: always
+    container_name: "iperf3"
+    network_mode: "host"
+    command: iperf3 -s -V -d -p 5201
+
   peer:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: "no"
-    #container_name: cluster-server
+    restart: "always"
+    container_name: peer
+    network_mode: "host"
     environment:
-      VIEWSERVER: http://view.cranecloud.io:5000
+      VIEWSERVER: http://view.cranecloud.africa:5000
       CARBON_SERVER: '0.0.0.0'
       CARBON_PORT: 2003
-      DELAY: 500 #s
-      PORT: 5100
-      HOST_IP: cluster-server
-      TEST_PORT: 5100
-      CLUSTER_NAME: cluster-server
-      HOST: '0.0.0.0'
-    ports:
-      - 5141:5100
-      - 5203:5201
-
+      DELAY: 600 #5 minute delay for the graphite pushes
     command: ["python", "init.py", "-v"]
-
-    external_links:
-      - viewserver-api
-    networks:
-      - peer
     volumes:
       - peer:/data
-  
-  graphite:
-    restart: always
-    container_name: graphite
-    ports:
-      - 80:80
-      - 2003-2004:2003-2004
-      - 8125:8125/udp
-      - 8126:8126
-
-
-networks:
-  multicluster:
-    external: true
 
 volumes:
-  muticlusterserver:
+  storage:
+  peer:

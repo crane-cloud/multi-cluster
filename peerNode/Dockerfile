@@ -11,8 +11,6 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-RUN iperf3 -s -D -p 5201 
+EXPOSE 5001
 
-EXPOSE 5100 5201
-
-# CMD [ "python", "starter.py", "-v"]
+CMD [ "python", "init.py", "-v"]
