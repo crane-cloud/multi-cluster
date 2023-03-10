@@ -31,6 +31,7 @@ services:
       CARBON_PORT: 2003
       DELAY: 600 #5 minute delay for the graphite pushes
       PORT: 5001
+      IPERF: 5201
     command: ["python", "server.py", "-v"]
     volumes:
       - peer:/data
