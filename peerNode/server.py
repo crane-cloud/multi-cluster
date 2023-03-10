@@ -6,8 +6,8 @@ import re
 import json
 import os
 from discovery import check_cluster_info
-from metrics import getCPU, getMemory, getDisk
-from util import create_db_connection
+from util import create_db_connection, getCPU, getMemory, getDisk
+import init, client
 
 @method
 def get_availability() -> Result:
@@ -16,16 +16,26 @@ def get_availability() -> Result:
     return Success(result)
 
 @method
-def get_server_resources() -> Result:
+def get_cluster_resources() -> Result:
     cpu = getCPU()
     memory = getMemory()
     disk = getDisk()
 
-    resources = {"cpu":cpu, "memory": memory, "disk":disk}
+    resources = {"cpu":cpu, "memory":memory, "disk":disk}
 
     if resources:
-        result = {"data": resources, "message": "success", "status": 201}
+        result = {"data": resources, "message": "success", "status": 200}
     else:
         result = {"data": Error, "message": "failed", "status": 500}
 
     return Success(result)
+
+hostname = socket.gethostname()
+ip_address = socket.gethostbyname(hostname)
+port = int(os.getenv('PORT'))
+
+if __name__ == "__main__":
+    init.main()
+    serve(ip_address, port)
+    time.sleep(120)
+    client.main()

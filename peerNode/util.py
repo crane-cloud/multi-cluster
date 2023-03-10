@@ -3,6 +3,10 @@ from sqlite3 import Error
 import requests
 import os
 from jsonrpcserver import Success, method, serve,  InvalidParams, Result, Error
+import psutil
+from tcp_latency import measure_latency
+import iperf3
+
 
 def create_db_connection(db):
     """ create a database connection to the SQLite database
@@ -96,7 +100,7 @@ def retrieve_clusters_info ():
         print("Error: ", e)
         return None
 
-@method
+
 def check_availability(host, port):
     try:
         serv_conn = Server("http://"+host+":"+str(port))
@@ -109,10 +113,39 @@ def check_availability(host, port):
         return 0
 
 
-@method
-def get_cluster_resources(host, port):
-    return None
+# Pick CPU, Memory and Disk metrics 
+def getCPU():
+    percent_cpu = psutil.cpu_percent()
+    print(percent_cpu)
+    return percent_cpu
 
-@method
-def get_network_resources(host, port):
+
+def getMemory():
+    percent_memory = psutil.virtual_memory().percent
+    return percent_memory
+
+
+def getDisk():
+    tot_disk = psutil.disk_usage(os.sep)
+    percent_disk = psutil.disk_usage(os.sep).percent
+    return tot_disk
+
+
+
+def check_cluster_resources(host, port):
+    try:
+        serv_conn = Server("http://"+host+":"+str(port))
+        if serv_conn:
+            resp = serv_conn.get_cluster_resources()
+        if resp["status"] == 200:
+            print(resp)
+            return resp["data"]
+
+        else:
+            return None
+    except:
+        return None
+
+
+def check_network_resources(host, port):
     return None

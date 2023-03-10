@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 #from metrics import get_jitter, get_latency
 #from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
-from util import retrieve_clusters_info, check_availability
+from util import retrieve_clusters_info, check_availability, check_cluster_resources
 import requests
 #from metrics import get_throughtput
 import os
@@ -28,11 +28,25 @@ def push_to_graphite(metrics):
 def main():
 
     while True:
+
         clusters = retrieve_clusters_info()
         
         for cluster in clusters:
             
             availability = check_availability(cluster["ip_address"], cluster["port"])
+
+            if availability == 1:
+
+                resources = check_cluster_resources(cluster["ip_address"], cluster["port"])
+
+                if resources:
+                    resource_message = [
+                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "P", resources["cpu"], int(time.time())),
+                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "M", resources["memory"], int(time.time())),
+                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "D", resources["disk"], int(time.time()))
+                        ]
+                    graphite_r_message = '\n'.join(resource_message) + '\n'    
+                    push_to_graphite(graphite_r_message)
 
             #lines = [
             #'%s %s %s %d %d' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
@@ -49,6 +63,7 @@ def main():
             #    return None
             availability_metric = '%s %s %s %d %d\n' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
+        
         time.sleep(DELAY)
 
 
@@ -83,7 +98,5 @@ def main():
 #    print(metrics)
 #    print(server.insert_availability(metrics))
 
-
-
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()

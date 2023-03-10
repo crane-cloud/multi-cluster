@@ -73,10 +73,10 @@ def main():
 
 
 
-hostname = socket.gethostname()
-ip_address = socket.gethostbyname(hostname)
-port = int(os.getenv('PORT'))
+#hostname = socket.gethostname()
+#ip_address = socket.gethostbyname(hostname)
+#port = int(os.getenv('PORT'))
 
-if __name__ == "__main__":
-    main()
-    serve(ip_address, port)
+#if __name__ == "__main__":
+#    main()
+    #serve(ip_address, port)

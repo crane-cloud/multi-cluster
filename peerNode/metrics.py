@@ -11,7 +11,6 @@ def getCPU():
     print(percent_cpu)
     return percent_cpu
 
-
 def getMemory():
     percent_memory = psutil.virtual_memory().percent
     return percent_memory
