@@ -1,8 +1,8 @@
 import sqlite3
 from sqlite3 import Error
 import requests
+from jsonrpcserver import Success, method, serve,  InvalidParams, Result, Error
 
-@method
 def create_db_connection(db):
     """ create a database connection to the SQLite database
         specified by the db
@@ -18,7 +18,6 @@ def create_db_connection(db):
     return conn
 
 
-@method
 def create_peer_tables(conn):
     try:
         # Cluster information table
@@ -56,17 +55,7 @@ def create_peer_tables(conn):
         #     conn.close()
         print("sqlite connection is not closed")
 
-@method
-def save_cluster_info(cluster_info, database, table):
-
-    # create a database connection
-    conn = create_connection(database)
-    """
-    Query tasks by priority
-    :param conn: the Connection object
-    :param priority:
-    :return:
-    """
+def save_cluster_info(conn, cluster_info):
 
     data_tuple = (cluster_info["cluster_id"],
                   cluster_info["name"],
@@ -74,12 +63,9 @@ def save_cluster_info(cluster_info, database, table):
                   cluster_info["port"])
 
     conn.execute(
-        "INSERT INTO {} (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple).format(table)
+        "INSERT OR IGNORE INTO init (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple)
     conn.commit()
 
-    #return get_cluster_info()
-
-@method
 def retrieve_clusters_info ():
     print("Retrieve all the clusters from the ViewServer")
     url = f"{os.getenv('VIEWSERVER')}/clusters"
