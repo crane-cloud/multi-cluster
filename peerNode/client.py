@@ -33,11 +33,11 @@ def main():
             
             availability = check_availability(cluster["ip_address"], cluster["port"])
 
-            lines = [
-            '%s %s %s %d %d' % (cluster["cluster_id"], "Availability", "Availability", availability, int(time.time()))
+            #lines = [
+            #'%s %s %s %d %d' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
             #'system.%s.loadavg_5min %s %d' % (node, loadavgs[1], timestamp),
             #'system.%s.loadavg_15min %s %d' % (node, loadavgs[2], timestamp)
-            ]
+            #]
 
             #if availability == 1:
             #    resources = get_cluster_resources(cluster["ip_address"], cluster["port"])
@@ -46,8 +46,8 @@ def main():
             #else:
 
             #    return None
-        metrics = '\n'.join(lines) + '\n'
-        push_to_graphite(metrics)
+        availability_metric = '%s %s %s %d %d\n' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
+        push_to_graphite(availability_metric)
         time.sleep(DELAY)
 
 
