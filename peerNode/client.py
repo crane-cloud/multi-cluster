@@ -17,7 +17,8 @@ DELAY = os.getenv("DELAY")
 
 
 def push_to_graphite(metrics):
-    print ('Pushing metrics to the Graphite Server:\n{metrics}' %metrics)
+    print ("Pushing metrics to the Graphite Server")
+    print(metrics)
     sock = socket.socket()
     sock.connect((CARBON_SERVER, CARBON_PORT))
     sock.sendall(metrics)
