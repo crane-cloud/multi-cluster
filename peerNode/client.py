@@ -21,8 +21,9 @@ def push_to_graphite(metrics):
     print(metrics)
     sock = socket.socket()
     sock.connect((CARBON_SERVER, CARBON_PORT))
-    sock.sendall(metrics)
+    sock.sendall(metrics.encode())
     sock.close()
+
 
 def main():
 
