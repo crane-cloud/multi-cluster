@@ -3,53 +3,62 @@ import sys
 from datetime import datetime
 from metrics import get_jitter, get_latency
 from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
-from util import retrieve_clusters_info, get_availability
+from util import retrieve_clusters_info, check_availability
 import requests
 from metrics import get_throughtput
 import os
 import socket
 import time
 
-
-CARBON_SERVER = os.getenv("CARBON_SERVER")
-CARBON_PORT = os.getenv("CARBON_PORT")
+hostname = socket.gethostname()
+CARBON_SERVER = socket.gethostbyname(hostname)
+CARBON_PORT = int(os.getenv('CARBON_PORT'))
 DELAY = os.getenv("DELAY")
+
+
+def push_to_graphite(metrics):
+    print ('Pushing metrics to the Graphite Server:\n{metrics}' %metrics)
+    sock = socket.socket()
+    sock.connect((CARBON_SERVER, CARBON_PORT))
+    sock.sendall(metrics)
+    sock.close()
 
 def main():
 
     while True:
         clusters = retrieve_clusters_info()
         
-        timestamp = int(time.time())
-    
-    for cluster in clusters:
+        for cluster in clusters:
+            
+            availability = check_availability(cluster["ip_address"], cluster["port"])
+
+            lines = [
+            '%s %s %s %d %d' % (cluster["cluster_id"], "Availability", "Availability", availability, int(time.time()))
+            #'system.%s.loadavg_5min %s %d' % (node, loadavgs[1], timestamp),
+            #'system.%s.loadavg_15min %s %d' % (node, loadavgs[2], timestamp)
+            ]
+
+            #if availability == 1:
+            #    resources = get_cluster_resources(cluster["ip_address"], cluster["port"])
+            #    network = get_network_resources(cluster["ip_address"], cluster["port"])
         
-        availability = get_availability(cluster["ip_address"], cluster["port"])
+            #else:
 
-        if availability == 1:
-            resources = get_cluster_resources (cluster["ip_address"], cluster["port"])
-            network = get_network_resources (cluster["ip_address"], cluster["port"])
-        
-        else:
-
-            return None
+            #    return None
+        metrics = '\n'.join(lines) + '\n'
+        push_to_graphite(metrics)
+        time.sleep(DELAY)
 
 
-    port = 5001
-    server = Server(f'http://localhost:{port}')
+#    port = 5001
+#    server = Server(f'http://localhost:{port}')
 
-    try:
-        print("Get server metrics")
-        print(server.get_server_resources())
+#    try:
+#        print("Get server metrics")
+#        print(server.get_server_resources())
 
-    except:
-        print("Error: ", sys.exc_info())
-
-
-
-
-
-
+#    except:
+#        print("Error: ", sys.exc_info())
 
 def store_metrics(server, host, port, cluster_id):
     latency = get_latency(host,port)

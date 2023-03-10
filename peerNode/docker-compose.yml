@@ -28,7 +28,6 @@ services:
     network_mode: "host"
     environment:
       VIEWSERVER: "http://view.cranecloud.africa:5000"
-      CARBON_SERVER: '0.0.0.0'
       CARBON_PORT: 2003
       DELAY: 600 #5 minute delay for the graphite pushes
       PORT: 5001

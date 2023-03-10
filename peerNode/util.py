@@ -85,11 +85,11 @@ def retrieve_clusters_info ():
         return None
 
 @method
-def get_availability(host, port):
+def check_availability(host, port):
     try:
         serv_conn = Server("http://"+host+":"+str(port))
         if serv_conn:
-            resp = serv_conn.check_availability()
+            resp = serv_conn.get_availability()
         print(resp)
         if resp["status"] == 200:
             return 1
