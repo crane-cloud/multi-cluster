@@ -62,3 +62,8 @@
         version: ft-integrate-graphite
         clone: yes
         update: yes
+    - name: Run the multi-cluster setup for the peers
+      command: make start
+      args:
+        chdir: /users/amwotil/multi-cluster
+        executable: /bin/bash
