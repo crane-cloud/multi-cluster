@@ -13,7 +13,7 @@ import time
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
 CARBON_PORT = int(os.getenv('CARBON_PORT'))
-DELAY = os.getenv("DELAY")
+DELAY = int(os.getenv("DELAY"))
 
 
 def push_to_graphite(metrics):
