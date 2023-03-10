@@ -47,8 +47,8 @@ def main():
             #else:
 
             #    return None
-        availability_metric = '%s %s %s %d %d\n' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
-        push_to_graphite(availability_metric)
+            availability_metric = '%s %s %s %d %d\n' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
+            push_to_graphite(availability_metric)
         time.sleep(DELAY)
 
 
