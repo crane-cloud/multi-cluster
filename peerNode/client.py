@@ -1,11 +1,11 @@
 from jsonrpclib import Server
 import sys
 from datetime import datetime
-from metrics import get_jitter, get_latency
-from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
+#from metrics import get_jitter, get_latency
+#from discovery import get_cluster_info, save_cluster_info, generate_cluster_info
 from util import retrieve_clusters_info, check_availability
 import requests
-from metrics import get_throughtput
+#from metrics import get_throughtput
 import os
 import socket
 import time
@@ -60,26 +60,26 @@ def main():
 #    except:
 #        print("Error: ", sys.exc_info())
 
-def store_metrics(server, host, port, cluster_id):
-    latency = get_latency(host,port)
-    jitter = get_jitter(host,port)
-    date = datetime.date
-    print("Get throughput.....")
-    throughput = get_throughtput(host)
-    print(throughput)
-    metrics = (cluster_id, throughput,latency,jitter, str(date))
-    print(metrics)
-    print("Inserting network data: latency, throughput & jitter..")
-    resp = server.insert_network(metrics)
-    print(resp)
+#def store_metrics(server, host, port, cluster_id):
+#   latency = get_latency(host,port)
+#    jitter = get_jitter(host,port)
+#    date = datetime.date
+#    print("Get throughput.....")
+#    throughput = get_throughtput(host)
+#    print(throughput)
+#    metrics = (cluster_id, throughput,latency,jitter, str(date))
+#    print(metrics)
+#    print("Inserting network data: latency, throughput & jitter..")
+#    resp = server.insert_network(metrics)
+#    print(resp)
 
     # insert availability metrics
-    print("Handle availability....")
-    availability_score = check_availability(host,port)
-    print(availability_score)
-    metrics = (cluster_id, availability_score, str(date))
-    print(metrics)
-    print(server.insert_availability(metrics))
+#    print("Handle availability....")
+#    availability_score = check_availability(host,port)
+#    print(availability_score)
+#    metrics = (cluster_id, availability_score, str(date))
+#    print(metrics)
+#    print(server.insert_availability(metrics))
 
 
 

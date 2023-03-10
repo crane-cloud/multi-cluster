@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import requests
+import os
 from jsonrpcserver import Success, method, serve,  InvalidParams, Result, Error
 
 def create_db_connection(db):
@@ -64,6 +65,17 @@ def save_cluster_info(conn, cluster_info):
 
     conn.execute(
         "INSERT OR IGNORE INTO init (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple)
+    conn.commit()
+
+def save_clusters_info(conn, cluster_info):
+
+    data_tuple = (cluster_info["cluster_id"],
+                  cluster_info["name"],
+                  cluster_info["ip_address"],
+                  cluster_info["port"])
+
+    conn.execute(
+        "INSERT OR IGNORE INTO cluster (cluster_id, name, ip_address, port) VALUES (?,?,?,?);", data_tuple)
     conn.commit()
 
 def retrieve_clusters_info ():

@@ -65,5 +65,4 @@
     - name: Run the multi-cluster setup for the peers
       command: make start
       args:
-        chdir: /users/amwotil/multi-cluster
-        executable: /bin/bash
+        chdir: /home/amwotil/peerNode
