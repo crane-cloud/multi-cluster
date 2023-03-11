@@ -68,9 +68,9 @@ def check_network_resources(host, port):
     print(network_resources)
     return network_resources
 
+## Manual test
+#def main():
+#    check_network_resources("128.110.217.44", 5201)
 
-def main():
-    check_network_resources("128.110.217.44", 5201)
-
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()

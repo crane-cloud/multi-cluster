@@ -41,18 +41,18 @@ def main():
 
                 if resources:
                     resource_message = [
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "P", resources["cpu"], int(time.time())),
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "M", resources["memory"], int(time.time())),
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Resource", "D", resources["disk"], int(time.time()))
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Resource", "P", resources["cpu"], int(time.time())),
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Resource", "M", resources["memory"], int(time.time())),
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Resource", "D", resources["disk"], int(time.time()))
                         ]
                     graphite_r_message = '\n'.join(resource_message) + '\n'    
                     push_to_graphite(graphite_r_message)
 
                 if network:
                     network_message = [
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Network", "T", network["throughput"], int(time.time())),
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Network", "L", network["latency"], int(time.time())),
-                        '%s %s %s %d %d' % (cluster["cluster_id"], "Network", "J", network["jitter"], int(time.time()))
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Network", "T", network["throughput"], int(time.time())),
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Network", "L", network["latency"], int(time.time())),
+                        '%s %s %s %f %d' % (cluster["cluster_id"], "Network", "J", network["jitter"], int(time.time()))
                         ]
                     graphite_n_message = '\n'.join(network_message) + '\n'    
                     push_to_graphite(graphite_n_message)
