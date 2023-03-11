@@ -48,14 +48,12 @@ def get_throughtput(host, port):
         print('Throughput Test completed:')
 
         print('Average sum sent:')
-
         print('Megabits sent      (mbps)   {0}'.format(result.sent_Mbps))
 
         print('Average sum received:')
         print('Megabits sent      (mbps)   {0}'.format(result.received_Mbps))
         
-
-    client.close()
+    #client.close()
 
     return (result.sent_Mbps+ result.received_Mbps)/2
 

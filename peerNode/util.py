@@ -3,6 +3,7 @@ from sqlite3 import Error
 import requests
 import os
 from jsonrpcserver import Success, method, serve,  InvalidParams, Result, Error
+from jsonrpclib import Server
 import psutil
 from tcp_latency import measure_latency
 import iperf3
@@ -128,7 +129,8 @@ def getMemory():
 def getDisk():
     tot_disk = psutil.disk_usage(os.sep)
     percent_disk = psutil.disk_usage(os.sep).percent
-    return tot_disk
+    #free_disk = 100 - percent_disk
+    return percent_disk
 
 
 
@@ -145,7 +147,3 @@ def check_cluster_resources(host, port):
             return None
     except:
         return None
-
-
-def check_network_resources(host, port):
-    return None
