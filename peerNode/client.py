@@ -7,6 +7,7 @@ import requests
 import os
 import socket
 import time
+import logging
 
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
@@ -16,13 +17,17 @@ IPERF = int(os.getenv("IPERF"))
 
 
 def push_to_graphite(metrics):
-    print ("Pushing metrics to the Graphite Server")
-    print(metrics)
-    sock = socket.socket()
-    sock.connect((CARBON_SERVER, CARBON_PORT))
-    sock.sendall(metrics.encode())
-    sock.close()
-
+    logging.info("Pushing metrics to the Graphite Server")
+    #print ("Pushing metrics to the Graphite Server")
+    logging.info(metrics)
+    #print(metrics)
+    try:
+        sock = socket.socket()
+        sock.connect((CARBON_SERVER, CARBON_PORT))
+        sock.sendall(str.encode(metrics))
+        sock.close()
+    except:
+        logging.error("Unable to push metrics to graphite")
 
 def main():
 
