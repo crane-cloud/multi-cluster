@@ -26,6 +26,7 @@ def push_to_graphite(metrics):
         sock.connect((CARBON_SERVER, CARBON_PORT))
         sock.sendall(str.encode(metrics))
         sock.close()
+        print("pushed to graphite")
     except:
         #logging.error("Unable to push metrics to graphite")
         print("Unable to push metrics to Graphite")
