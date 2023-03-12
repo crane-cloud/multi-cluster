@@ -24,12 +24,14 @@ def push_to_graphite(metrics):
     try:
         sock = socket.socket()
         sock.connect((CARBON_SERVER, CARBON_PORT))
-        sock.sendall(str.encode(metrics))
+        try:
+            sock.sendall(str.encode(metrics))
+        except Exception as e:
+            print (e)
         sock.close()
-        print("pushed to graphite")
-    except:
+    except Exception as me:
         #logging.error("Unable to push metrics to graphite")
-        print("Unable to push metrics to Graphite")
+        print(me)
 
 def main():
 
