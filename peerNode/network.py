@@ -2,8 +2,6 @@ import tcp_latency
 from tcp_latency import measure_latency
 import iperf3
 
-client = iperf3.Client()
-
 def jitterCalculator(latencies):
     # Calculating difference list
     diff_list = []
@@ -31,6 +29,7 @@ def get_jitter(host, port):
     return round(jitter_result,3)
 
 def get_throughtput(host, port):
+    client = iperf3.Client()
     client.server_hostname = host
     client.port = port
     client.protocol = 'tcp'
@@ -41,17 +40,17 @@ def get_throughtput(host, port):
     
     if result.error:
         print(result.error)
-        return None
+        return 0
 
     else:
         print('')
         print('Throughput Test completed:')
 
         print('Average sum sent:')
-        print('Megabits sent      (mbps)   {0}'.format(result.sent_Mbps))
+        print('Megabits sent      (Mbps)   {0}'.format(result.sent_Mbps))
 
         print('Average sum received:')
-        print('Megabits sent      (mbps)   {0}'.format(result.received_Mbps))
+        print('Megabits sent      (Mbps)   {0}'.format(result.received_Mbps))
         
     #client.close()
 

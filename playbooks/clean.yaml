@@ -6,4 +6,4 @@
     - name: Clean the multi-cluster setup for the peers
       command: make stop
       args:
-        chdir: /home/amwotil/peerNode
+        chdir: /users/amwotil/sinendet/peerNode

@@ -58,15 +58,15 @@
     - name: Delete contents & directory of the user Alex
       file:
         state: absent
-        path: /home/amwotil
+        path: /users/amwotil/sinendet/peerNode/storage
     - name: Clone the MC github repository
       git:
         repo: https://github.com/crane-cloud/multi-cluster.git
-        dest: /users/amwotil
+        dest: /users/amwotil/sinendet
         version: ft-integrate-graphite
         clone: yes
         update: yes
     - name: Run the multi-cluster setup for the peers
       command: make start
       args:
-        chdir: /users/amwotil/peerNode
+        chdir: /users/amwotil/sinendet/peerNode
