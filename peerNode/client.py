@@ -17,17 +17,18 @@ IPERF = int(os.getenv("IPERF"))
 
 
 def push_to_graphite(metrics):
-    logging.info("Pushing metrics to the Graphite Server")
-    #print ("Pushing metrics to the Graphite Server")
-    logging.info(metrics)
-    #print(metrics)
+    #logging.info("Pushing metrics to the Graphite Server")
+    print ("Pushing metrics to the Graphite Server")
+    #logging.info(metrics)
+    print(metrics)
     try:
         sock = socket.socket()
         sock.connect((CARBON_SERVER, CARBON_PORT))
         sock.sendall(str.encode(metrics))
         sock.close()
     except:
-        logging.error("Unable to push metrics to graphite")
+        #logging.error("Unable to push metrics to graphite")
+        print("Unable to push metrics to Graphite")
 
 def main():
 
