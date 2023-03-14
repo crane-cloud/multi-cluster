@@ -9,8 +9,6 @@ import time
 import socket
 #from discovery import check_cluster_info (To be implemented for fast lookups)
 from util import create_db_connection, getCPU, getMemory, getDisk
-import init
-import client
 
 @method
 def get_availability() -> Result:
@@ -38,8 +36,4 @@ ip_address = socket.gethostbyname(hostname)
 port = int(os.getenv('PORT'))
 
 if __name__ == "__main__":
-    init.main()
     serve(ip_address, port)
-    time.sleep(120)
-    while True:
-        client.main()

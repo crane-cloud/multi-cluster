@@ -19,12 +19,12 @@ services:
     network_mode: "host"
     command: iperf3 -s -V -d -p 5201
 
-  peer:
+  peer-srv:
     build:
       context: .
       dockerfile: Dockerfile
     restart: "always"
-    container_name: peer
+    container_name: "peer-srv"
     network_mode: "host"
     environment:
       VIEWSERVER: "http://view.cranecloud.africa:5000"
@@ -34,8 +34,26 @@ services:
       IPERF: 5201
     command: ["python", "server.py", "-v"]
     volumes:
-      - peer:/data
+      - peerclt:/data
+
+  peer-clt:
+    build:
+      context: .
+      dockerfile: Dockerfile-client
+    restart: "always"
+    container_name: "peer-clt"
+    network_mode: "host"
+    environment:
+      VIEWSERVER: "http://view.cranecloud.africa:5000"
+      CARBON_PORT: 2003
+      DELAY: 600 #5 minute delay for the graphite pushes
+      PORT: 5001
+      IPERF: 5201
+    command: ["python", "client.py", "-v"]
+    volumes:
+      - peersrv:/data
 
 volumes:
   storage:
-  peer:
+  peersrv:
+  peerclt:
