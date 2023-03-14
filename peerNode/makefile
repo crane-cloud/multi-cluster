@@ -9,8 +9,10 @@ help:  ## Display this help
 
 build-image: ## Build docker image
 	@ ${INFO} "Building required docker images"
-	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer
-	@ ${INFO} "Image succesfully built"
+	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer-srv
+	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer-clt
+
+	@ ${INFO} "Images succesfully built"
 	@ echo " "
 
 start:build-image ## Start development server
