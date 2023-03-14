@@ -41,4 +41,5 @@ if __name__ == "__main__":
     init.main()
     serve(ip_address, port)
     time.sleep(120)
-    client.main()
+    while True:
+        client.main()
