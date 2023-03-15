@@ -70,3 +70,7 @@
       command: make start
       args:
         chdir: /users/amwotil/sinendet/peerNode
+    #- name: Copy storage-schemas.conf to the conf directory
+    #  copy:
+    #    src: /users/amwotil/sinendet/peerNode/storage-schemas.conf
+    #    dest: /users/amwotil/sinendet/peerNode/conf/
