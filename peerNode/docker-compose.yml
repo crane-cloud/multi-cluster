@@ -9,7 +9,7 @@ services:
     network_mode: "host"
     volumes:
     - ./storage:/opt/graphite/storage
-    - ./conf:/opt/graphite/conf
+    - ./storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf
 
   iperf3:
     build:
