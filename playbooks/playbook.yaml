@@ -1,6 +1,6 @@
 ---
 - hosts: peer
-  remote_user: amwotil
+  remote_user: ubuntu
   become: true
   tasks:
     - name: install dependencies
@@ -40,9 +40,9 @@
       ansible.builtin.group:
         name: docker
         state: present
-    - name: adding amwotil to docker group
+    - name: adding the ubuntu user to docker group
       user:
-        name: amwotil
+        name: ubuntu
         groups: docker
         append: yes
     - name: Install docker-compose
@@ -53,24 +53,24 @@
     - name: Change file ownership, group and permissions
       ansible.builtin.file:
         path: /usr/local/bin/docker-compose
-        owner: amwotil
+        owner: ubuntu
         group: docker
 #    - name: Delete contents & directory of the user Alex
 #      file:
 #        state: absent
-#        path: /users/amwotil/sinendet/peerNode/storage
+#        path: /home/ubuntu/sinendet/peerNode/storage
     - name: Clone the MC github repository
       git:
         repo: https://github.com/crane-cloud/multi-cluster.git
-        dest: /users/amwotil/sinendet
+        dest: /home/ubuntu/sinendet
         version: ft-integrate-graphite
         clone: yes
         update: yes
     - name: Run the multi-cluster setup for the peers
       command: make start
       args:
-        chdir: /users/amwotil/sinendet/peerNode
+        chdir: /home/ubuntu/sinendet/peerNode
     #- name: Copy storage-schemas.conf to the conf directory
     #  copy:
-    #    src: /users/amwotil/sinendet/peerNode/storage-schemas.conf
-    #    dest: /users/amwotil/sinendet/peerNode/conf/
+    #    src: /users/ubuntu/sinendet/peerNode/storage-schemas.conf
+    #    dest: /users/ubuntu/sinendet/peerNode/conf/

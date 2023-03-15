@@ -1,9 +1,8 @@
 [view]
-ms0844.utah.cloudlab.us
+view.cranecloud.africa
 
 [peer]
-ms0806.utah.cloudlab.us 		
-ms0829.utah.cloudlab.us 		
-ms0812.utah.cloudlab.us 		
-ms0819.utah.cloudlab.us 		
-ms0832.utah.cloudlab.us
+cr-dar.cranecloud.africa
+cr-kla.cranecloud.africa
+cr-lsk.cranecloud.africa
+cr-bun.cranecloud.africa
