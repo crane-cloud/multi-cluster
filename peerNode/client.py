@@ -9,7 +9,7 @@ import socket
 import time
 import logging
 import init
-from urlparse import urljoin
+#from urlparse import urljoin
 
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
