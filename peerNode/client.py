@@ -9,6 +9,8 @@ import socket
 import time
 import logging
 import init
+import robgracli
+from urlparse import urljoin
 
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
@@ -35,9 +37,34 @@ def push_to_graphite(metrics):
         #logging.error("Unable to push metrics to graphite")
         print(me)
 
+#def pull_from_graphite(metrics):
+    #http://ms0829.utah.cloudlab.us/render?target=128.110.217.54:5001.Network.L&format=json
+
+    #clusters = retrieve_clusters_info()
+    #for cluster in clusters:
+    #    print("Each cluster metrics")
+
+    #    url = urljoin(CARBON_SERVER, '/render')
+    #    response = self.get(url, params={
+    #        'target': metrics,
+    #        'format': 'json',
+    #        'from': '-%ss' % query_from,
+    #    })
+    #    data = response.json()
+    #    A = requests.get(CARBON_SERVER)
+
+#def compute_profile():
+    print("Please compute the profile")
+
+#def requestVote():
+    #print("A request to be voted")
+
+#def responseVote():
+    #print("I voted for you")
+
 def main():
 
-    while True:
+    #while True:
 
         clusters = retrieve_clusters_info()
         
@@ -52,28 +79,28 @@ def main():
 
                 if resources:
                     resource_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Resource", "P", resources["cpu"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Resource", "M", resources["memory"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Resource", "D", resources["disk"], int(time.time()))
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "P", resources["cpu"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "M", resources["memory"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "D", resources["disk"], int(time.time()))
                         ]
                     graphite_r_message = '\n'.join(resource_message) + '\n'    
                     push_to_graphite(graphite_r_message)
 
                 if network:
                     network_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Network", "T", network["throughput"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Network", "L", network["latency"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"], "Network", "J", network["jitter"], int(time.time()))
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "T", network["throughput"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "L", network["latency"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "J", network["jitter"], int(time.time()))
                         ]
                     graphite_n_message = '\n'.join(network_message) + '\n'    
                     push_to_graphite(graphite_n_message)
 
-            availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"], "Availability", "A", availability, int(time.time()))
+            availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
-        time.sleep(DELAY)
+        #time.sleep(DELAY)
 
 if __name__ == '__main__':
     init.main()
-    time.sleep(120)
+    time.sleep(60)
     main()
