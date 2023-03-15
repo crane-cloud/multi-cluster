@@ -78,23 +78,23 @@ def main():
 
                 if resources:
                     resource_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "P", resources["cpu"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "M", resources["memory"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Resource", "D", resources["disk"], int(time.time()))
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "P", resources["cpu"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "M", resources["memory"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "D", resources["disk"], int(time.time()))
                         ]
                     graphite_r_message = '\n'.join(resource_message) + '\n'    
                     push_to_graphite(graphite_r_message)
 
                 if network:
                     network_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "T", network["throughput"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "L", network["latency"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_'), "Network", "J", network["jitter"], int(time.time()))
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "T", network["throughput"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "L", network["latency"], int(time.time())),
+                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "J", network["jitter"], int(time.time()))
                         ]
                     graphite_n_message = '\n'.join(network_message) + '\n'    
                     push_to_graphite(graphite_n_message)
 
-            availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_'), "Availability", "A", availability, int(time.time()))
+            availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
         time.sleep(600)
