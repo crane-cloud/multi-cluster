@@ -9,7 +9,6 @@ import socket
 import time
 import logging
 import init
-import robgracli
 from urlparse import urljoin
 
 hostname = socket.gethostname()
