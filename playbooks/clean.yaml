@@ -4,6 +4,11 @@
   become: true
   tasks:
     - name: Clean the multi-cluster setup for the peers
-      command: make stop
+      command: make clean
       args:
         chdir: /users/amwotil/sinendet/peerNode
+
+    - name: Delete contents & directory of the user Alex
+      file:
+        state: absent
+        path: /users/amwotil/sinendet/
