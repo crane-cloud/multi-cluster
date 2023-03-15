@@ -63,7 +63,7 @@ def push_to_graphite(metrics):
 
 def main():
 
-    #while True:
+    while True:
 
         clusters = retrieve_clusters_info()
         
@@ -97,9 +97,9 @@ def main():
             availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
-        #time.sleep(DELAY)
+        time.sleep(DELAY)
 
 if __name__ == '__main__':
     init.main()
-    time.sleep(60)
+    time.sleep(45)
     main()
