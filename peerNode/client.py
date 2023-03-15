@@ -53,7 +53,7 @@ def push_to_graphite(metrics):
     #    A = requests.get(CARBON_SERVER)
 
 #def compute_profile():
-    print("Please compute the profile")
+    #print("Please compute the profile")
 
 #def requestVote():
     #print("A request to be voted")
