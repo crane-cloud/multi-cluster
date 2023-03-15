@@ -1,8 +1,7 @@
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-buster
 
 RUN apt update
-RUN apt install -y iperf3
-RUN apt install -y gcc python3-dev
+RUN apt install -y python3-dev
 
 WORKDIR /app
 
@@ -11,6 +10,4 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-EXPOSE 5001
-
-#CMD [ "python", "server.py", "-v"]
+CMD [ "python3", "server.py", "-v"]

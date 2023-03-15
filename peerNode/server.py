@@ -36,4 +36,5 @@ ip_address = socket.gethostbyname(hostname)
 port = int(os.getenv('PORT'))
 
 if __name__ == "__main__":
-    serve(ip_address, port)
+    while True:
+        serve(ip_address, port)

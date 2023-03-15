@@ -33,9 +33,9 @@ services:
       DELAY: 600 #5 minute delay for the graphite pushes
       PORT: 5001
       IPERF: 5201
-    command: ["python", "server.py", "-v"]
+    #command: ["python3", "server.py", "-v"]
     volumes:
-      - peerclt:/data
+      - peersrv:/data
 
   peer-clt:
     build:
@@ -50,9 +50,9 @@ services:
       DELAY: 600 #5 minute delay for the graphite pushes
       PORT: 5001
       IPERF: 5201
-    command: ["python", "client.py", "-v"]
+    #command: ["python3", "client.py", "-v"]
     volumes:
-      - peersrv:/data
+      - peerclt:/data
 
 volumes:
   storage:
