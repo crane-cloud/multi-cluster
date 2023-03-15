@@ -97,7 +97,7 @@ def main():
             availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
-        time.sleep(DELAY)
+        time.sleep(600)
 
 if __name__ == '__main__':
     init.main()
