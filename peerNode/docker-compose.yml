@@ -9,6 +9,7 @@ services:
     network_mode: "host"
     volumes:
     - ./storage:/opt/graphite/storage
+    - ./conf:/opt/graphite/conf
 
   iperf3:
     build:
@@ -55,5 +56,6 @@ services:
 
 volumes:
   storage:
+  conf:
   peersrv:
   peerclt:

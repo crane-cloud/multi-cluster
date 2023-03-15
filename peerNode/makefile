@@ -17,7 +17,7 @@ build-image: ## Build docker image
 
 start:build-image ## Start development server
 	@ ${INFO} "starting local development server"
-	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) up
+	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) up -d
 
 clean: ## Remove all project images and volumes
 	@ ${INFO} "Cleaning your local environment"
