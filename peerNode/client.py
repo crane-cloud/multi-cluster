@@ -101,5 +101,5 @@ def main():
 
 if __name__ == '__main__':
     init.main()
-    time.sleep(45)
+    time.sleep(60)
     main()
