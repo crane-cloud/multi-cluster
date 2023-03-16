@@ -8,7 +8,7 @@
       args:
         chdir: /home/ubuntu/sinendet/peerNode
 
-    - name: Delete contents & directory of the user Alex
-      file:
-        state: absent
-        path: /home/ubuntu/sinendet/
+    #- name: Delete contents & directory of the user Alex
+    #  file:
+    #    state: absent
+    #    path: /home/ubuntu/sinendet/
