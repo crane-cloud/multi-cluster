@@ -6,13 +6,13 @@ import re
 import json
 import os
 from discovery import check_cluster_info
-from terms import initiate_terms_table, get_terms, update_term
+# from terms import initiate_terms_table, get_terms, update_term
 from metrics import getCPU, getMemory, getDisk
+from termClass import my_term
 
 @method
 def check_availability() -> Result:
     result = {"data": "Cluster on", "message": "success", "status": 200}
-
     return Success(result)
 
 @method
@@ -219,43 +219,26 @@ def main():
     print(cluster_info)
 
     #initiate term on start
-    current_url =  os.getenv('HOST_IP')
-    term_record = initiate_terms_table(current_url)
-    print(term_record)
+    # current_url =  os.getenv('HOST_IP')
+    # term_record = initiate_terms_table(current_url)
+    # print(term_record)
 
 #add rpc method for profile return verdict
 @method
-def peer_message_response(url,term) -> Result:
+def response_to_request(url,term) -> Result:
     print('from:', url)
     current_url =  os.getenv('HOST_IP')
-    term_record = get_terms()
-    if term_record is None:
-       return Success({"data":{
-           "message":"failed to fetch current term"
-       }, "recieving_server": current_url, "requester_url": url, "code":"005", "reponse": False })
+
+    local_term = my_term.value
     
-    local_term = int(term_record['current_term'])
     if local_term >= term:
         return Success({"data":{
            "message":"Higher term exists on the peer network",
            "term": local_term
-        }, "recieving_server": current_url, "requester_url": url, "code":"004", "reponse": False })
-    
-    updated_record = update_term(current_url,str(term))
-    if updated_record == "update failed":
-           return Success({"data":{
-           "message":"failed to update current term"
-       }, "recieving_server": current_url, "requester_url": url, "code":"003", "reponse": False })
-    
-    elif updated_record is None:
-          return Success({"data":{
-           "message":"Updated current term but failed to fetch record"
-       }, "recieving_server": current_url, "requester_url": url, "code":"002", "reponse": True })
-    else:
-        return Success({"data":{"updated_record":updated_record,
-                                 "message":"Success"
-                                },
-                         "recieving_server": current_url, "requester_url": url, "code":"001", "reponse": True})
+        }, "recieving_server": current_url, "requester_url": url, "code":"002", "reponse": False })
+    my_term.value=term
+    updated_record = my_term.value
+    return Success({"data":{"updated_record":updated_record, "message":"Success"},"recieving_server": current_url, "requester_url": url, "code":"001", "reponse": True})
 
 
 port = int(os.getenv('PORT', 5100))
@@ -263,5 +246,5 @@ host = os.getenv('HOST', 'localhost')
 print('Port: ', port)
 print('host: ', host)
 if __name__ == "__main__":
-    main()
+    main() 
     serve(host, port)
