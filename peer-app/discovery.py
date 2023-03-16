@@ -3,6 +3,7 @@ import string
 import os
 import requests
 import sqlite3
+from sqlite3 import Error
 
 
 def get_random_string(length):
