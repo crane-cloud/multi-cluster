@@ -2,8 +2,8 @@
 
 # File names
 DOCKER_DEV_COMPOSE_FILE := docker-compose.yml
-DOCKER_DEV_APP_NAME := multicluster-central-api
-DOCKER_DEV_DATABASE_NAME := multicluster-central-database
+DOCKER_DEV_APP_NAME := view-server
+DOCKER_DEV_DATABASE_NAME := view-db
 
 
 help:  ## Display this help

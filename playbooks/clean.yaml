@@ -1,0 +1,14 @@
+---
+- hosts: peer
+  remote_user: ubuntu
+  become: true
+  tasks:
+    - name: Clean the multi-cluster setup for the peers
+      command: make clean
+      args:
+        chdir: /home/ubuntu/sinendet/peerNode
+
+    #- name: Delete contents & directory of the user Alex
+    #  file:
+    #    state: absent
+    #    path: /home/ubuntu/sinendet/

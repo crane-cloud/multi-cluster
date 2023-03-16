@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  view-db:
+    restart: "always"
+    image: postgres:14.1-alpine
+    container_name: view-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: cluster
+      POSTGRES_PASSWORD: 254d43d30b513cd0f325924973ab2cf9
+    ports:
+      - "5432:5432"
+    networks:
+      - view
+    volumes:
+      - ./db:/var/lib/postgresql/data
+  
+  view-server:
+    restart: "always"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: view-server
+    environment:
+      DATABASE_URI: postgresql://postgres:254d43d30b513cd0f325924973ab2cf9@view-db:5432/cluster
+      FLASK_APP_SECRET: qY2i691SX2sEuZ7LUjY480RS48mw5qCeUiyV0i0vzmg
+      FLASK_ENV: development
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: 254d43d30b513cd0f325924973ab2cf9
+      FLASK_APP: server.py
+      FLASK_RUN_PORT: 5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+
+    depends_on:
+      - view-db
+    networks:
+      - view
+
+# run on the view network
+networks:
+  view:
+    external: true
+
+volumes:
+  db:
+  app:

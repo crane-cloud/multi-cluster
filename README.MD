@@ -1,15 +1,15 @@
 # Multicluster Application
 
-## Create the multicluster network
+## Create the view network
 ```bash
-docker network create multicluster
+docker network create view
 ```
 This enables the containers to communicate with each other.
 
 ## Run central server
 
 ```bash
-cd central-server
+cd viewServer
 ```
 Start the server:
 ```bash
@@ -19,18 +19,18 @@ make start
 ## Run the Peer application
 
 ```bash
-cd peer-app
+cd peerNode
 ```
-Start the servers
+Start the peer node
 ```bash
 make start
 ```
 
-This will start 3 servers as defined in the docker-compose file.
+This will start and initialize a peer node as defined in the docker-compose file.
 
 ## To start the peer application
 
-SSH into any of the peer-apps containers
+SSH into any of the peer node containers
 ```bash
 docker exec -it <container-name> /bin/bash
 ```
@@ -44,7 +44,7 @@ This should initialise cluster discovery and setup the cluster.
 ## To kill the containers and volumes to have a fresh start
 
 ```bash
-cd peer-app
+cd peerNode
 ```
 Run the following command
 ```bash
