@@ -64,7 +64,7 @@
       git:
         repo: https://github.com/crane-cloud/multi-cluster.git
         dest: /home/ubuntu/sinendet
-        version: ft-integrate-graphite
+        version: ft-performance-optimization
         clone: yes
         update: yes
     - name: Run the multi-cluster setup for the peers

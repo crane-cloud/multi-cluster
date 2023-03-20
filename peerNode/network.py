@@ -13,26 +13,31 @@ def jitterCalculator(latencies):
     return (sum/len(diff_list))
 
 def get_latency(host, port):
-    latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
-    print("Latency Test results:")
+    latency_result = measure_latency(host=host, port=port, runs=4, timeout=2.0)
+    #print("Latency Test results:")
     print(latency_result)
-    return round(latency_result[0],3)
+
+    avg_latency = sum(latency_result) / len(latency_result)
+
+    return round(avg_latency, 3)
 
 def get_jitter(host, port):
-    latency_result = measure_latency(host=host, port=port, runs=10, timeout=2.5)
-    print("Latency Test results:")
-    print(latency_result)
-    print('')
-    print('Jitter from latency values, (ms)')
+    latency_result = measure_latency(host=host, port=port, runs=4, timeout=2.0)
+    #print("Latency Test results:")
+    #print(latency_result)
+    #print('')
+    #print('Jitter from latency values, (ms)')
     jitter_result = jitterCalculator(latency_result)
     print(jitter_result)
-    return round(jitter_result,3)
+    return round(jitter_result, 3)
 
 def get_throughtput(host, port):
     client = iperf3.Client()
     client.server_hostname = host
     client.port = port
     client.protocol = 'tcp'
+    client.zerocopy = True
+    client.duration = int(4)
 
     print('Connecting to {0}:{1}'.format(client.server_hostname, client.port))
     result = client.run()
@@ -43,18 +48,19 @@ def get_throughtput(host, port):
         return 0
 
     else:
-        print('')
-        print('Throughput Test completed:')
+        #print('')
+        #print('Throughput Test completed:')
 
-        print('Average sum sent:')
+        #print('Average sum sent:')
         print('Megabits sent      (Mbps)   {0}'.format(result.sent_Mbps))
 
-        print('Average sum received:')
+        #print('Average sum received:')
         print('Megabits sent      (Mbps)   {0}'.format(result.received_Mbps))
         
     #client.close()
+    avg_throughput = (result.sent_Mbps+ result.received_Mbps)/2
 
-    return (result.sent_Mbps+ result.received_Mbps)/2
+    return round(avg_throughput, 3)
 
 
 def check_network_resources(host, port):
