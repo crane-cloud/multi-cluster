@@ -116,23 +116,27 @@ def check_availability(host, port):
 
 # Pick CPU, Memory and Disk metrics 
 def getCPU():
-    percent_cpu = psutil.cpu_percent()
-    print(percent_cpu)
-    return percent_cpu
+    # Calculate the CPU availability for the last 10 minutes
+    load1, load5, load10 = psutil.getloadavg()
+    cpu_usage = (load10/psutil.cpu_count()) * 100
+    available_cpu = (100 - cpu_usage)
+    print(available_cpu)
+    return available_cpu
 
 
 def getMemory():
-    percent_memory = psutil.virtual_memory().percent
-    return percent_memory
+    # Calculate the percentage of the RAM available
+    percent_memory = psutil.virtual_memory()[2]
+    available_memory = (100 - percent_memory)
+    return available_memory
 
 
 def getDisk():
+    #  Calculate the percentage of the disk available
     tot_disk = psutil.disk_usage(os.sep)
     percent_disk = psutil.disk_usage(os.sep).percent
-    #free_disk = 100 - percent_disk
-    return percent_disk
-
-
+    available_disk = (100 - percent_disk)
+    return available_disk
 
 def check_cluster_resources(host, port):
     try:
