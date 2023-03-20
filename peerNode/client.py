@@ -61,45 +61,66 @@ def push_to_graphite(metrics):
 #def responseVote():
     #print("I voted for you")
 
+def retrieve_save_peer_resources(cluster):
+    try:
+        resources = check_cluster_resources(cluster["ip_address"], cluster["port"])
+        if resources:
+            resource_message = [
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "P", resources["cpu"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "M", resources["memory"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "D", resources["disk"], int(time.time()))
+            ]
+            graphite_r_message = '\n'.join(resource_message) + '\n'    
+            push_to_graphite(graphite_r_message)
+        else:
+            return None
+    except Exception as e:
+        print(e)
+
+def retrieve_save_network_resources(cluster, port):
+    try:
+        network = check_network_resources(cluster["ip_address"], port)
+        if network:
+            network_message = [
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "T", network["throughput"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "L", network["latency"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "J", network["jitter"], int(time.time()))
+                ]
+            graphite_n_message = '\n'.join(network_message) + '\n'    
+            push_to_graphite(graphite_n_message)
+        else:
+            return None
+    except Exception as e:
+        print(e)
+
 def main():
 
     while True:
-
+        # Fetch all the clusters from the view
         clusters = retrieve_clusters_info()
         
+        # For each cluster, retrieve, measure and push to the graphite tsdb
         for cluster in clusters:
             
+            # We first check for the availability of the cluster
             availability = check_availability(cluster["ip_address"], cluster["port"])
 
+            # If the cluster is available, we can go ahead and measure/retrieve the values
             if availability == 1:
+                retrieve_save_peer_resources(cluster)
+                retrieve_save_network_resources(cluster, IPERF)
 
-                resources = check_cluster_resources(cluster["ip_address"], cluster["port"])
-                network = check_network_resources(cluster["ip_address"], IPERF)
-
-                if resources:
-                    resource_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "P", resources["cpu"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "M", resources["memory"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "D", resources["disk"], int(time.time()))
-                        ]
-                    graphite_r_message = '\n'.join(resource_message) + '\n'    
-                    push_to_graphite(graphite_r_message)
-
-                if network:
-                    network_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "T", network["throughput"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "L", network["latency"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "J", network["jitter"], int(time.time()))
-                        ]
-                    graphite_n_message = '\n'.join(network_message) + '\n'    
-                    push_to_graphite(graphite_n_message)
-
+            # Regardless of the peer availability, the A metric should have a value
             availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
+        # We set the loop sleep time to 10 minutes
         time.sleep(600)
 
 if __name__ == '__main__':
     init.main()
+
+    # Allow fpr the nodes to register at the view
     time.sleep(60)
+    
     main()
