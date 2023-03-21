@@ -32,36 +32,34 @@ def get_jitter(host, port):
     return round(jitter_result, 3)
 
 def get_throughtput(host, port):
-    client = iperf3.Client()
-    client.server_hostname = host
-    client.port = port
-    client.protocol = 'tcp'
-    client.zerocopy = True
-    client.duration = int(4)
+    
+    try:
+        client = iperf3.Client()
+        client.server_hostname = host
+        client.port = port
+        client.protocol = 'tcp'
+        client.zerocopy = True
+        client.duration = int(4)
+        
+        print('Connecting to {0}:{1}'.format(client.server_hostname, client.port))
+        result = client.run()
 
-    print('Connecting to {0}:{1}'.format(client.server_hostname, client.port))
-    result = client.run()
-    #result is a class Testresult
+    except Exception as e:
+        print(e)
+        return 0.0
     
     if result.error:
         print(result.error)
-        return 0
+        return 0.0
 
     else:
-        #print('')
-        #print('Throughput Test completed:')
-
-        #print('Average sum sent:')
         print('Megabits sent      (Mbps)   {0}'.format(result.sent_Mbps))
-
-        #print('Average sum received:')
         print('Megabits sent      (Mbps)   {0}'.format(result.received_Mbps))
         
-    #client.close()
-    avg_throughput = (result.sent_Mbps+ result.received_Mbps)/2
-
-    return round(avg_throughput, 3)
-
+        #client.close()
+        avg_throughput = (result.sent_Mbps+ result.received_Mbps)/2
+        print(avg_throughput)
+        return round(avg_throughput, 3)
 
 def check_network_resources(host, port):
     throughput = get_throughtput(host, port)
