@@ -33,7 +33,7 @@ class WeightClass:
 
     # our base cluster id
     dr_cluster_ip = '196.32.212.213:5001'
-    assumed_availability = 1
+    #assumed_availability = 1
     
     
 weightInstance = WeightClass()
@@ -121,7 +121,7 @@ def compute_resource_profile(formated_metric):
     return disk + cpu + memory
 
 def compute_availability_profile(formated_metric):
-    return (weightInstance.availability_weight_1*weightInstance.assumed_availability)/(weightInstance.assumed_availability+weightInstance.assumed_availability)
+    return (weightInstance.availability_weight_1*weightInstance.base_cluster_metrics['availability'])/(weightInstance.base_cluster_metrics['availability']+formated_metric['memory'])
 
 def overall_profile(Resource,Network,Availablity):
     profile = (Resource * weightInstance.resource_weight_2)+(Network * weightInstance.network_weight_2 ) + (Availablity * weightInstance.availability_weight_2 )

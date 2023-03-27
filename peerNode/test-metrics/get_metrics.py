@@ -89,3 +89,16 @@ def get_disk(ip):
     else:
         print(f'Latency Request failed with status code {response.status_code}')
         return values
+
+def get_availability(ip):
+    fomatted_ip = ip.replace('.','_').replace(':','_')
+    response = requests.get(f"{base_url}?target={fomatted_ip}.Availability.A&format=json")
+    values =[]
+    if response.status_code == 200:
+        data = response.json()
+        values = data[0]['datapoints']
+        #print(data[0]['datapoints'])
+        return clean_metrics_data(values)
+    else:
+        print(f'Latency Request failed with status code {response.status_code}')
+        return values

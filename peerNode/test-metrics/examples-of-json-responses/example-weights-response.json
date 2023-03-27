@@ -1,26 +1,26 @@
 [
   {
-    "based_on_cluster_id": "196.32.212.213:5001",
-    "against_cluster_ip": "102.134.147.244:5001",
-    "network_value": 0.2818100130456056,
-    "resource_value": 0.4181658582467695,
-    "availability_value": 0.47058823529411764,
-    "profile": 0.3672902033157154
+     "based_on_cluster_id":"196.32.212.213:5001",
+     "against_cluster_ip":"196.43.171.248:5001",
+     "network_value":0.4032538935303872,
+     "resource_value":0.5003219511626984,
+     "availability_value":0.010341261633919338,
+     "profile":0.3586451873224026
   },
   {
-    "based_on_cluster_id": "196.32.212.213:5001",
-    "against_cluster_ip": "196.32.215.213:5001",
-    "network_value": 0.17162509988321206,
-    "resource_value": 0.41935671050808876,
-    "availability_value": 0.47058823529411764,
-    "profile": 0.3181237906841
+     "based_on_cluster_id":"196.32.212.213:5001",
+     "against_cluster_ip":"102.134.147.244:5001",
+     "network_value":0.4153410868765055,
+     "resource_value":0.499684873688527,
+     "availability_value":0.01040582726326743,
+     "profile":0.36387436033806536
   },
   {
-    "based_on_cluster_id": "196.32.212.213:5001",
-    "against_cluster_ip": "196.43.171.248:5001",
-    "network_value": 0.6351045296167248,
-    "resource_value": 0.48171428571428565,
-    "availability_value": 0.47058823529411764,
-    "profile": 0.5485146853863496
+     "based_on_cluster_id":"196.32.212.213:5001",
+     "against_cluster_ip":"196.32.215.213:5001",
+     "network_value":0.4240831133819831,
+     "resource_value":0.5027563294570255,
+     "availability_value":0.01040582726326743,
+     "profile":0.3688832817845048
   }
 ]
