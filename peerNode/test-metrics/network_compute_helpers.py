@@ -18,7 +18,8 @@ def get_modal(array_values):
 
 def get_average(array_values):
     array = np.array(array_values)
-    print("Average mark is: ", np.average(array))
+    # print("Average mark is: ", np.average(array))
+    return np.average(array)
 
 # def get_values(url):
 #     # emulate source of the metrics

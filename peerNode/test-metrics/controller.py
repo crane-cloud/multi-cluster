@@ -1,6 +1,6 @@
 import requests
 from get_metrics import get_network_latency, get_cpu, get_disk, get_memory,get_network_jitter,get_network_throughput,get_availability 
-from network_compute_helpers import get_percentiles
+from network_compute_helpers import get_percentiles,get_average
 from compute_weights import handle_metrics_list
 import threading
 
@@ -28,7 +28,7 @@ def get_metrics(ip):
     cpu95percentile =  get_percentiles(get_cpu(ip),95)
     memory95percentile =  get_percentiles(get_memory(ip),95)
     disk95percentile =  get_percentiles(get_disk(ip),95)
-    availability95percentile =  get_percentiles(get_availability(ip),95)
+    availability95percentile =  get_average(get_availability(ip))
     return {"latency":latency95percentile,"jitter":jitter95percentile,"throughput":throughput95percentile,
            "cpu":cpu95percentile,"memory":memory95percentile,"disk":disk95percentile, "availability":availability95percentile, "ip":ip}
 
