@@ -43,46 +43,6 @@ class WeightClass:
     
 weightInstance = WeightClass()
 
-
-# test_data =[
-#     {
-#     "latency": 23.0792,
-#     "jitter": 1.1542,
-#     "throughput": 435.7958,
-#     "cpu": 100.0,
-#     "memory": 95.34,
-#     "disk": 95.4,
-#     "ip": "102.134.147.244:5001"
-#     },
-#     {
-#     "latency": 36.1608,
-#     "jitter": 135.34819999999954,
-#     "throughput": 625.1694,
-#     "cpu": 96.5,
-#     "memory": 95.4,
-#     "disk": 95.4,
-#     "ip": "196.32.215.213:5001"
-#     },
-#     {
-#     "latency": 18,
-#     "jitter": 0.3,
-#     "throughput": 10,
-#     "cpu": 4,
-#     "memory": 8192,
-#     "disk": 85,
-#     "ip": "196.43.171.248:5001"
-#     },
-#     {
-#     "latency": 23,
-#     "jitter": 0.5,
-#     "throughput": 25,
-#     "cpu": 10,
-#     "memory": 4096,
-#     "disk": 40,
-#     "ip": "196.32.212.213:5001"
-#     }
-# ]
-
 def handle_metrics_list(data):
     formated_data =format_matrics_data(data)
     cluster_profiles_in_relation_to_base =[]

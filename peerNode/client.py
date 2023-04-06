@@ -11,12 +11,21 @@ import logging
 import init
 #from urlparse import urljoin
 
+#cache requirements
+import functools
+import json
+from collections import deque
+import threading
+
+from test_metrics.controller import profile_controller
+
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
 CARBON_PORT = int(os.getenv('CARBON_PORT'))
 DELAY = int(os.getenv("DELAY"))
 IPERF = int(os.getenv("IPERF"))
 
+cached_data_queue = deque(maxlen=10)
 
 def push_to_graphite(metrics):
     #logging.info("Pushing metrics to the Graphite Server")
@@ -61,6 +70,24 @@ def push_to_graphite(metrics):
 #def responseVote():
     #print("I voted for you")
 
+@functools.lru_cache(maxsize=None)
+def cached_data():
+    print("Retriving new data points:")
+    data = profile_controller()
+    cached_data_queue.append(json.dumps(data))
+    return cached_data_queue[-1] 
+
+def get_cached_data():
+    if not cached_data_queue:
+        return []
+    return json.loads(cached_data_queue[-1])
+
+def run_cached_data():
+    while True:
+        print(cached_data())
+        time.sleep(10)
+    
+
 def main():
 
     while True:
@@ -101,5 +128,9 @@ def main():
 
 if __name__ == '__main__':
     init.main()
+    # Start a new thread to run the cached_data() function periodically
+    t = threading.Thread(target=run_cached_data)
+    t.daemon = True
+    t.start()
     time.sleep(60)
     main()
