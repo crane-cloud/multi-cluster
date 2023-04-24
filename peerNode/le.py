@@ -12,8 +12,8 @@ import asyncio
 import aiohttp
 
 
-REQUESTVOTETIMER = 0.5
-RESPONSEVOTETIMER = 35
+REQUESTVOTETIMER = 50
+RESPONSEVOTETIMER = 50
 LEADERSHIPVOTETIMER = 50
 LEADERSHIPTERMTIMER = 60
 POLLLEADERTIMER = 100
@@ -26,6 +26,8 @@ class Cluster:
         self.state = 'member' # initial state of member
         self.proposal_number = 0 # the initial proposal number
         #self.leader_size = len(self.members.keys()) // 2 + 1 # quorum size to guarantee leadership
+        self.voted = {}
+        self.leaderx = {}
 
     # We perform a set of functions based on the state of the cluster
     def run(self):
@@ -33,8 +35,8 @@ class Cluster:
         while True:
             if self.state == 'member':
                 asyncio.run(self.member())
-            elif self.state == 'voter':
-                self.voter()
+            #elif self.state == 'voter':
+            #    self.voter()
             elif self.state == 'leader':
                 print("Entering Leader Role")
                 asyncio.run(self.leader())
@@ -80,6 +82,9 @@ class Cluster:
             responses = await asyncio.gather(*tasks)
             print(responses)
 
+        for response in responses:
+            print(response)
+            # We need to check if the responses contain the vote details with a responseVote method
         
         print('We wait for the responseVoteTimer to expire')
         time.sleep(5)
@@ -87,7 +92,7 @@ class Cluster:
         # We count the votes at this point (For the latest proposal number, we count the votes)
         # Example: self.votes = {1: {peer1, peer2, peer3}}
         ## - len(self.votes[1] = 3)
-        if len(self.votes[self.proposal_number]) < leader_size:
+        if len(self.votes[self.proposal_number]) >= leader_size:
             #We can now execute the leader role functions - send ackVote
             self.state = 'leader'
             
@@ -104,13 +109,11 @@ class Cluster:
                 self.state = 'member'    
 
 
-    def voter(self, member_id, proposal_number):
-        print('Voter Role')
+    def voter(self, proposal_number, member_id):
+        print('Voter Method')
         voter_id = self.member_id
 
-        # At the start, voted and leader entries are empty
-        self.voted = {}
-        self.leaderx = {}
+        print(voter_id)
 
         response = {
             "method": "responseVote",
@@ -118,7 +121,7 @@ class Cluster:
         }
 
         # If never voted or received a leader result
-        if not(self.voted)  and not(self.leader):
+        if not(self.voted)  and not(self.leaderx):
             try:
                 self.voted = {"proposal_number": proposal_number, "voted": member_id}
                 return response
@@ -162,7 +165,7 @@ class Cluster:
                 print(member)
                 
                 try:
-                    task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, REQUESTVOTETIMER))
+                    task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, LEADERSHIPVOTETIMER))
                     tasks.append(task)
                 except asyncio.TimeoutError:
                     print(f"Timeout Error: {member['cluster_id']}")
@@ -191,7 +194,11 @@ class Cluster:
     @method
     def requestVote(self, member_id: str, proposal_number: int) -> Result:
         #At the receipt of requestVote, the member state is changed to voter
-        response = voter(member_id, proposal_number)
+
+        print("Entering voter method")
+        #self.state = 'voter'
+
+        response = voter(self, member_id, proposal_number)
 
         result = {"response": response, "message": "Success", "status": 200}
 
@@ -249,16 +256,26 @@ async def make_post_request(peer_id, payload, timeout):
             print(f"Error: {e}")
             return None
 
+
+
+
+
+
+
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
 port = int(os.getenv("LE_PORT", 5002))
 
 if __name__ == '__main__':
 
-    #serve(ip_address, port)
+    serve(ip_address, port)
 
     # This retrieves members of the distributed system [Can be provided to any of the roles]
-    members = retrieve_clusters_info()
+    ##members = retrieve_clusters_info()
+
+    members = [{'name': 'peer_hp070', 'ip_address': '128.110.218.109', 'port': 5002, 'cluster_id': '128.110.218.109:5002'}, 
+                {'name': 'peer_hp076', 'ip_address': '128.110.218.115', 'port': 5002, 'cluster_id': '128.110.218.115:5002'}]
+
     member_id = ip_address + ':' + str(port)
 
     cluster = Cluster(member_id, members)
