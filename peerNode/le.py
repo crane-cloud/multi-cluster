@@ -186,46 +186,6 @@ class Cluster:
         # If within this period, we receive an ackVote and subsequent leader update - we revert to the member role
 
         # Or we remain with this role, and keep polling the leader to ensure it is live - increased chances of taking over
-    
-
-
-    #-----------------------------#
-    # The following are jsonrpcserver RPC methods (@method) that a peer can invoke
-    @method
-    def requestVote(self, member_id: str, proposal_number: int) -> Result:
-        #At the receipt of requestVote, the member state is changed to voter
-
-        print("Entering voter method")
-        #self.state = 'voter'
-
-        response = voter(self, member_id, proposal_number)
-
-        result = {"response": response, "message": "Success", "status": 200}
-
-        return result
-
-    @method
-    def ackVote(self, member_id: str, proposal_number: int):
-        #A voter or member receives the ackVote message as confirmation of winner (leader)
-        self.leader = {"proposal_number": proposal_number, "voted": member_id}
-        return None
-
-@method
-def responseVote(message):
-    #Message sent to a member as a vote
-    return None
-
-
-@method
-def informMember(proposal_number, leader_id):
-    #If a member receives this message (should be from the leader), the leaderShipTermTimer is reset
-    return None
-
-@method
-def pollLeader() -> Result:
-    # Candidate can always poll the leader 
-    return None
-    
 
 async def make_post_request(peer_id, payload, timeout):
     # Send the message to the specified peer
@@ -255,20 +215,9 @@ async def make_post_request(peer_id, payload, timeout):
         except Exception as e:
             print(f"Error: {e}")
             return None
-
-
-
-
-
-
-
-hostname = socket.gethostname()
-ip_address = socket.gethostbyname(hostname)
-port = int(os.getenv("LE_PORT", 5002))
+            
 
 if __name__ == '__main__':
-
-    serve(ip_address, port)
 
     # This retrieves members of the distributed system [Can be provided to any of the roles]
     ##members = retrieve_clusters_info()
@@ -283,5 +232,5 @@ if __name__ == '__main__':
     print(cluster.state)
     print(cluster.proposal_number)
     print(cluster.member_id)
-
+    
     asyncio.run(cluster.run())
