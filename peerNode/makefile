@@ -11,6 +11,7 @@ build-image: ## Build docker image
 	@ ${INFO} "Building required docker images"
 	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer-srv
 	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer-clt
+	@ docker compose -f $(DOCKER_DEV_COMPOSE_FILE) build peer-le
 
 	@ ${INFO} "Images succesfully built"
 	@ echo " "

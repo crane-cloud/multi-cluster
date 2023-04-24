@@ -49,6 +49,19 @@ services:
       DELAY: 600 #5 minute delay for the graphite pushes
       PORT: 5001
       IPERF: 5201
+    volumes:
+      - peerclt:/data
+
+  peer-le:
+    build:
+      context: .
+      dockerfile: Dockerfile-le
+    restart: "always"
+    container_name: "peer-le"
+    network_mode: "host"
+    environment:
+      VIEWSERVER: "http://view.cranecloud.africa:5000"
+      LE_PORT: 5002
       W1P: 0.4
       W1M: 0.3
       W1D: 0.3
@@ -60,10 +73,11 @@ services:
       W2N: 0.45
       W2A: 0.2
     volumes:
-      - peerclt:/data
+      - peerle:/data
 
 volumes:
   storage:
   conf:
   peersrv:
   peerclt:
+  peerle:

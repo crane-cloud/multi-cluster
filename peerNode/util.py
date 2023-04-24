@@ -85,7 +85,8 @@ def save_clusters_info(conn, cluster_info):
 
 def retrieve_clusters_info ():
     print("Retrieve all the clusters from the ViewServer")
-    url = f"{os.getenv('VIEWSERVER')}/clusters"
+    #url = f"{os.getenv('VIEWSERVER')}/clusters"
+    url = "http://view.cranecloud.africa:5000/clusters"
 
     try:
         request = requests.get(url)
