@@ -4,8 +4,8 @@
   become: true
   tasks:
     - name: stop the LE protocol
-    shell: "pkill -f /users/amwotil/multi-cluster/peerNode/app_le.py"
+    shell: "pkill -f /users/amwotil/noler/multi-cluster/peerNode/app_le.py"
     - name: delete the directory
       file:
         state: absent
-        path: /users/amwotil/multi-cluster
+        path: /users/amwotil/noler
