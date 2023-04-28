@@ -24,10 +24,13 @@ class Cluster:
         self.member_id = member_id # unique identifier of the member (address & port)
         self.members = members # cluster info as per the view {A dictionary of the cluster members}
         self.state = 'member' # initial state of member
-        self.proposal_number = 0 # the initial proposal number
+        self.proposal_number = 1 # the initial proposal number
         #self.leader_size = len(self.members.keys()) // 2 + 1 # quorum size to guarantee leadership
         self.voted = {}
         self.leaderx = {}
+
+        print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
+        serve(ip_address, port)
 
     # We perform a set of functions based on the state of the cluster
     def run(self):
@@ -80,11 +83,20 @@ class Cluster:
                     print(f"Timeout Error: {member['cluster_id']}")
                     continue
             responses = await asyncio.gather(*tasks)
+            print("Now printing All responses")
             print(responses)
 
         for response in responses:
-            print(response)
-            # We need to check if the responses contain the vote details with a responseVote method
+            if response is not None:
+                print("Now printing the response line by line")
+                print(response)
+
+                votes = response["result"]["response"]
+
+                #result = response["result"]
+
+                print(votes)
+                # We need to check if the responses contain the vote details with a responseVote method
         
         print('We wait for the responseVoteTimer to expire')
         time.sleep(5)
@@ -109,7 +121,7 @@ class Cluster:
                 self.state = 'member'    
 
 
-    def voter(self, proposal_number, member_id):
+    def voter (member_id, proposal_number):
         print('Voter Method')
         voter_id = self.member_id
 
@@ -196,10 +208,11 @@ async def make_post_request(peer_id, payload, timeout):
         start_time = time.monotonic()
         try:
             print(f"Sending post request to {url}")
-            response = await asyncio.wait_for(session.post(url, data=json.dumps(payload), headers=headers), timeout=timeout)
+            resp = await asyncio.wait_for(session.post(url, data=json.dumps(payload), headers=headers), timeout=timeout)
+
             latency = time.monotonic() - start_time
             print(f"Request to {url} completed in {latency:.4f} seconds")
-            return response
+            return (await resp.json())
 
         except asyncio.TimeoutError:
             print(f"Timeout error for server {url}")
@@ -216,6 +229,9 @@ async def make_post_request(peer_id, payload, timeout):
             print(f"Error: {e}")
             return None
             
+hostname = socket.gethostname()
+ip_address = socket.gethostbyname(hostname)
+port = int(os.getenv("LE_PORT", 5002))
 
 if __name__ == '__main__':
 

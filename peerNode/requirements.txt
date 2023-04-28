@@ -40,3 +40,4 @@ websocket-client==1.4.1
 yarg==0.1.9
 aiohttp==3.8.1
 asyncio==3.4.3
+flask==2.0.2
