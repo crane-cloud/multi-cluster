@@ -5,8 +5,6 @@ import time
 from jsonrpcserver import Success, method, serve, dispatch, InvalidParams, Result, Error, methods
 import requests
 import json
-from util import retrieve_clusters_info
-from timer import BaseTimer
 import socket
 import os
 import asyncio
@@ -49,7 +47,6 @@ class Cluster:
 
     # We perform a set of functions based on the state of the cluster
     def run(self):
-        #time.sleep(random.randint(20, 30) / 10.0)
         print('Run Mode with thread {thread}'.format(thread=threading.current_thread().name))
         while True:
             print("Current State: {state}".format(state=self.state))
@@ -150,6 +147,10 @@ class Cluster:
 
         if len(self.votes[self.proposal_number]) >= leader_size:
             #We can now execute the leader role functions - send ackVote
+
+            with open('/tmp/eval_da', 'a') as fpx:
+                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number), ts=datetime.datetime.now().strftime("%S.%f")[:-4])
+
             self.state = 'leader'
         else:
             return None
@@ -337,19 +338,10 @@ class Cluster:
         print("As leader we need to send heartbeat messages")
 
         try:
-            #heartbeat_logger = logging.getLogger('heartbeat')
-            #heartbeat_logger.setLevel(logging.INFO)
-            #handlerb = logging.StreamHandler()
-            #handlerb.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-            #heartbeat_logger.addHandler(handlerb)
-
             self.leadership_timer = None
             tx = await self.start_heartbeat()
 
-            #heartbeat_thread = threading.Thread(target=self.start_heartbeat)
-            #heartbeat_thread.daemon = True
-            #heartbeat_thread.start()
-        
+
         except Exception as e:
             print(f"Error: {e}")
 
@@ -396,6 +388,9 @@ class Cluster:
 
         print("Cluster state at ackVote {ack}".format(ack=cluster.state))
         cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id}
+
+        with open('/tmp/eval_da', 'a') as fp:
+            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"]), ts=datetime.datetime.now().strftime("%S.%f")[:-4])
 
         #For future elections, we update our proposal number
         cluster.proposal_number = proposal_number
@@ -502,8 +497,11 @@ if __name__ == '__main__':
     # This retrieves members of the distributed system [Can be provided to any of the roles]
     ##members = retrieve_clusters_info()
 
-    members = [{'name': 'peer_hp070', 'ip_address': '128.110.218.109', 'port': 5002, 'cluster_id': '128.110.218.109:5002'},
-           {'name': 'peer_hp076', 'ip_address': '128.110.218.115', 'port': 5002, 'cluster_id': '128.110.218.115:5002'}]
+    members = [{'name': 'amd156', 'ip_address': '128.110.219.67', 'port': 5002, 'cluster_id': '128.110.219.67:5002'},
+           {'name': 'amd015', 'ip_address': '128.110.218.254', 'port': 5002, 'cluster_id': '128.110.218.254:5002'},
+           {'name': 'hp017', 'ip_address': '128.110.218.56', 'port': 5002, 'cluster_id': '128.110.218.56:5002'},
+           {'name': 'hp034', 'ip_address': '128.110.218.73', 'port': 5002, 'cluster_id': '128.110.218.73:5002'},
+           {'name': 'amd002', 'ip_address': '128.110.218.241', 'port': 5002, 'cluster_id': '128.110.218.241:5002'}]
 
     member_id = ip_address + ':' + str(port)
 
