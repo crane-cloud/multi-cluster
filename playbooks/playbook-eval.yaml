@@ -26,6 +26,6 @@
         force: yes
     - name: install pip3 packages for the app
       pip:
-        requirements: /users/amwotil/noler/multi-cluster/requirements.txt
+        requirements: /users/amwotil/noler/requirements.txt
     - name: run the LE protocol
-      shell: "python3  /users/amwotil/noler/multi-cluster/peerNode/app_le.py"
+      shell: "python3  /users/amwotil/noler/peerNode/app_le.py"
