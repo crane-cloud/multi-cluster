@@ -98,7 +98,7 @@ class Cluster:
 
         self.proposal_number = proposal_number + 1
         self.votes = {self.proposal_number: []}
-        leader_size = len(self.members) // 2  #to add + 1 with at least 3 nodes
+        leader_size = len(self.members) // 2 + 1  #to add + 1 with at least 3 nodes
 
         print("A new election cycle started with proposal {proposal} at time {ts}".format(proposal=self.proposal_number, ts=time.time()))
 
@@ -149,7 +149,7 @@ class Cluster:
             #We can now execute the leader role functions - send ackVote
 
             with open('/tmp/eval_da', 'a') as fpx:
-                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number), ts=datetime.datetime.now().strftime("%S.%f")[:-4])
+                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
 
             self.state = 'leader'
         else:
@@ -390,7 +390,7 @@ class Cluster:
         cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id}
 
         with open('/tmp/eval_da', 'a') as fp:
-            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"]), ts=datetime.datetime.now().strftime("%S.%f")[:-4])
+            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
 
         #For future elections, we update our proposal number
         cluster.proposal_number = proposal_number
