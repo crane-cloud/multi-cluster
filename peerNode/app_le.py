@@ -148,7 +148,7 @@ class Cluster:
             #We can now execute the leader role functions - send ackVote
 
             with open('/tmp/eval_da', 'a') as fpx:
-                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
+                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
 
             self.state = 'leader'
         else:
@@ -182,7 +182,7 @@ class Cluster:
 
         else:
             with open('/tmp/eval_da', 'a') as fpm:
-                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))            
+                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))            
 
         # Check if first instance/run
         if self.leadership_timer is None:
@@ -393,7 +393,7 @@ class Cluster:
         cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id}
 
         with open('/tmp/eval_da', 'a') as fp:
-            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
+            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
 
         #For future elections, we update our proposal number
         cluster.proposal_number = proposal_number
@@ -435,7 +435,7 @@ class Cluster:
         cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id}
 
         with open('/tmp/eval_da', 'a') as fpi:
-            fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
+            fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
 
         cluster.reset_leadership_timer()
 
