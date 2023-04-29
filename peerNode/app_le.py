@@ -178,7 +178,11 @@ class Cluster:
 
             # Update the member proposal number to the latest for future elections
             self.proposal_number = self.leaderx["proposal_number"]
-            print("Updated proposal from leader entry: {proposal}".format(proposal=self.leaderx["proposal_number"]))            
+            print("Updated proposal from leader entry: {proposal}".format(proposal=self.leaderx["proposal_number"]))
+
+        else:
+            with open('/tmp/eval_da', 'a') as fpm:
+                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))            
 
         # Check if first instance/run
         if self.leadership_timer is None:
@@ -427,14 +431,19 @@ class Cluster:
         print("Received the informMember message")
 
         print("The leader {leader} with proposal {proposal} is Alive - reset timer".format(leader=leader_id, proposal=proposal_number))
+
+        cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id}
+
+        with open('/tmp/eval_da', 'a') as fpi:
+            fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%S.%f")[:-4]))
+
         cluster.reset_leadership_timer()
 
-        cluster.leaderx["leader"] = leader_id
+        #if leader_id != cluster.member_id:
+        #    print("I am strictly a member")
 
-        if leader_id != cluster.member_id:
-            print("I am strictly a member")
-
-            cluster.state = 'member'
+        #
+        #    cluster.state = 'member'
 
         return Success(None)
 
