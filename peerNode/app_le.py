@@ -13,8 +13,8 @@ from flask import Flask, request, Response
 import datetime
 
 
-ELECTIONTIMEOUT = 0.0005 #seconds
-RESPONSETIMEOUT = 0.0004 #seconds
+ELECTIONTIMEOUT = 0.7 #seconds
+RESPONSETIMEOUT = 0.4 #seconds
 
 app = Flask(__name__)
 
@@ -34,8 +34,8 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.election_timeout = 0.0005 #seconds
-        self.heartbeat_interval = 0.0003 #seconds
+        self.leadership_timeout = 1.0 #seconds
+        self.heartbeat_interval = 0.4 #seconds
         self.leadership_timer = None
 
     # We perform a set of functions based on the state of the cluster
@@ -59,7 +59,7 @@ class Cluster:
         print("Resetting the leadership timer - received informMember")
         if self.leadership_timer:
             self.leadership_timer.cancel()
-        self.leadership_timer = threading.Timer(self.election_timeout, lambda: None)
+        self.leadership_timer = threading.Timer(self.leadership_timeout, lambda: None)
         self.leadership_timer.start()
 
 
@@ -161,8 +161,8 @@ class Cluster:
         print("Thread name:", threading.current_thread().name)
 
         # We wait for a random amount of time - there could be a leader soon
-        time.sleep(round(random.uniform(0.0001, 0.0004), 6)) # seconds latency range
-
+        #time.sleep(round(random.uniform(0.0001, 0.0004), 6)) # seconds latency range
+        time.sleep(random.randint(30, 99) / 100.0)
 
         if self.leaderx:
             print("I have self leaderx: {rx}".format(rx=self.leaderx["leader"]))
