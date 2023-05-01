@@ -506,11 +506,11 @@ if __name__ == '__main__':
     # This retrieves members of the distributed system [Can be provided to any of the roles]
     ##members = retrieve_clusters_info()
 
-    members = [{'name': 'cr-dar', 'ip_address': '196.32.212.213', 'port': 5002, 'cluster_id': '196.32.212.213:5002'},
-           {'name': 'cr-lsk', 'ip_address': '196.32.215.213', 'port': 5002, 'cluster_id': '196.32.215.213:5002'},
-           {'name': 'cr-kla', 'ip_address': '102.134.147.244', 'port': 5002, 'cluster_id': '102.134.147.244:5002'},
-           {'name': 'cr-jhb', 'ip_address': '129.232.230.130', 'port': 5002, 'cluster_id': '129.232.230.130:5002'},
-           {'name': 'cr-bun', 'ip_address': '196.43.171.248', 'port': 5002, 'cluster_id': '196.43.171.248:5002'}]
+    members = [{'name': 'amd156', 'ip_address': '128.110.219.67', 'port': 5002, 'cluster_id': '128.110.219.67:5002'},
+           {'name': 'amd015', 'ip_address': '128.110.218.254', 'port': 5002, 'cluster_id': '128.110.218.254:5002'},
+           {'name': 'hp017', 'ip_address': '128.110.218.56', 'port': 5002, 'cluster_id': '128.110.218.56:5002'},
+           {'name': 'hp034', 'ip_address': '128.110.218.73', 'port': 5002, 'cluster_id': '128.110.218.73:5002'},
+           {'name': 'amd002', 'ip_address': '128.110.218.241', 'port': 5002, 'cluster_id': '128.110.218.241:5002'}]
 
     member_id = ip_address + ':' + str(port)
 
