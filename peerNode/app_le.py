@@ -15,13 +15,6 @@ import datetime
 
 app = Flask(__name__)
 
-REQUESTVOTETIMER = 50
-RESPONSEVOTETIMER = 50
-LEADERSHIPVOTETIMER = 50
-LEADERSHIPTERMTIMER = 60
-POLLLEADERTIMER = 100
-
-RESPONSETIMEOUT = 0.5
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
@@ -38,11 +31,10 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.election_timeout = random.randint(50, 70) / 10.0 #seconds
-        self.heartbeat_interval = 5 #seconds
+        self.election_timeout = 0.0005 #seconds
+        self.response_timeout = 0.0004 #seconds
+        self.heartbeat_interval = 0.0003 #seconds
         self.leadership_timer = None
-
-        self.election_timer = None
 
     # We perform a set of functions based on the state of the cluster
     def run(self):
@@ -78,7 +70,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, RESPONSETIMEOUT))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.response_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -101,6 +93,10 @@ class Cluster:
 
         print("A new election cycle started with proposal {proposal} at time {ts}".format(proposal=self.proposal_number, ts=time.time()))
 
+        with open('/tmp/eval_da.txt', 'a') as fps:
+                fps.write("Election: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+
+
         payload = {
             "method": "requestVote",
             "params": {
@@ -112,7 +108,7 @@ class Cluster:
             "id": 1,
             }
 
-        responses = await asyncio.wait_for(self.async_op(payload), timeout=5.0)
+        responses = await asyncio.wait_for(self.async_op(payload), timeout=self.response_timeout)
         #responses = await self.async_op(payload)
 
         for response in responses:
@@ -147,8 +143,8 @@ class Cluster:
         if len(self.votes[self.proposal_number]) >= leader_size:
             #We can now execute the leader role functions - send ackVote
 
-            with open('/tmp/eval_da', 'a') as fpx:
-                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
+            with open('/tmp/eval_da.txt', 'a') as fpx:
+                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
             self.state = 'leader'
         else:
@@ -163,7 +159,7 @@ class Cluster:
         print("Thread name:", threading.current_thread().name)
 
         # We wait for a random amount of time - there could be a leader soon
-        time.sleep(random.randint(50,150)/10)
+        time.sleep(round(random.uniform(0.0001, 0.0004), 6)) # seconds latency range
 
 
         if self.leaderx:
@@ -181,21 +177,24 @@ class Cluster:
             print("Updated proposal from leader entry: {proposal}".format(proposal=self.leaderx["proposal_number"]))
 
         else:
-            with open('/tmp/eval_da', 'a') as fpm:
-                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))            
+            with open('/tmp/eval_da.txt', 'a') as fpm:
+                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))            
 
         # Check if first instance/run
         if self.leadership_timer is None:
             # We start a new election cycle
             print("No leaderx, so we start a new election cycle")
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=5.0)        
+            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout) # within the largest latency range
 
         elif self.leadership_timer and self.leadership_timer.is_alive():
             print("Leadership timer set to expire in", self.leadership_timer.interval, "seconds")
 
         else:
             print("Leadership timer has already expired - leader dead?")
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=5.0)
+            with open('/tmp/eval_da.txt', 'a') as fpx:
+                fpx.write("Expired: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+
+            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
 
 
     async def start_heartbeat(self):
@@ -224,7 +223,7 @@ class Cluster:
                         # Only request for votes from other members
                         if member["cluster_id"] != self.member_id:                        
                             try:
-                                task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, RESPONSETIMEOUT))
+                                task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, self.response_timeout))
                                 tasks.append(task)
                             except asyncio.TimeoutError:
                                 print(f"Timeout Error: {member['cluster_id']}")
@@ -329,7 +328,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, RESPONSETIMEOUT))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, self.response_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -392,8 +391,8 @@ class Cluster:
         print("Cluster state at ackVote {ack}".format(ack=cluster.state))
         cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id}
 
-        with open('/tmp/eval_da', 'a') as fp:
-            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
+        with open('/tmp/eval_da.txt', 'a') as fp:
+            fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
         #For future elections, we update our proposal number
         cluster.proposal_number = proposal_number
@@ -434,8 +433,8 @@ class Cluster:
 
         cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id}
 
-        with open('/tmp/eval_da', 'a') as fpi:
-            fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-4]))
+        with open('/tmp/eval_da.txt', 'a') as fpi:
+            fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
         cluster.reset_leadership_timer()
 
