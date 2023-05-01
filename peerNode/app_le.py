@@ -72,7 +72,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, RESPONSE_TIMEOUT))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, RESPONSETIMEOUT))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
