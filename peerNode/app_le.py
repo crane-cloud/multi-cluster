@@ -13,6 +13,9 @@ from flask import Flask, request, Response
 import datetime
 
 
+ELECTIONTIMEOUT = 0.0005 #seconds
+RESPONSETIMEOUT = 0.0004 #seconds
+
 app = Flask(__name__)
 
 
@@ -32,7 +35,6 @@ class Cluster:
         self.leaderx = {} # the leader information at this member
 
         self.election_timeout = 0.0005 #seconds
-        self.response_timeout = 0.0004 #seconds
         self.heartbeat_interval = 0.0003 #seconds
         self.leadership_timer = None
 
@@ -70,7 +72,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.response_timeout))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, RESPONSE_TIMEOUT))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -108,7 +110,7 @@ class Cluster:
             "id": 1,
             }
 
-        responses = await asyncio.wait_for(self.async_op(payload), timeout=self.response_timeout)
+        responses = await asyncio.wait_for(self.async_op(payload), timeout=RESPONSETIMEOUT)
         #responses = await self.async_op(payload)
 
         for response in responses:
@@ -184,7 +186,7 @@ class Cluster:
         if self.leadership_timer is None:
             # We start a new election cycle
             print("No leaderx, so we start a new election cycle")
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout) # within the largest latency range
+            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=ELECTIONTIMEOUT) # within the largest latency range
 
         elif self.leadership_timer and self.leadership_timer.is_alive():
             print("Leadership timer set to expire in", self.leadership_timer.interval, "seconds")
@@ -194,7 +196,7 @@ class Cluster:
             with open('/tmp/eval_da.txt', 'a') as fpx:
                 fpx.write("Expired: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=ELECTIONTIMEOUT)
 
 
     async def start_heartbeat(self):
@@ -223,7 +225,7 @@ class Cluster:
                         # Only request for votes from other members
                         if member["cluster_id"] != self.member_id:                        
                             try:
-                                task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, self.response_timeout))
+                                task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, RESPONSETIMEOUT))
                                 tasks.append(task)
                             except asyncio.TimeoutError:
                                 print(f"Timeout Error: {member['cluster_id']}")
@@ -328,7 +330,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, self.response_timeout))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, RESPONSETIMEOUT))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -463,7 +465,7 @@ async def make_post_request(peer_id, payload, timeout):
         start_time = time.monotonic()
         try:
             print(f"Sending post request to {url}")
-            resp = await asyncio.wait_for(session.post(url, data=json.dumps(payload), headers=headers), timeout=timeout)
+            resp = await asyncio.wait_for(session.post(url, data=json.dumps(payload), headers=headers), timeout=RESPONSETIMEOUT)
 
             latency = time.monotonic() - start_time
             print(f"Request to {url} completed in {latency:.4f} seconds")
