@@ -13,8 +13,9 @@ from flask import Flask, request, Response
 import datetime
 
 
-ELECTIONTIMEOUT = 0.7 #seconds
-RESPONSETIMEOUT = 0.4 #seconds
+ELECTIONTIMEOUT = 1.0 #seconds
+RESPONSETIMEOUT = 0.75 #seconds
+POSTREQUESTTIMEOUT = 0.5 #seconds
 
 app = Flask(__name__)
 
@@ -34,8 +35,8 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.leadership_timeout = 1.0 #seconds
-        self.heartbeat_interval = 0.4 #seconds
+        self.leadership_timeout = 1.5 #seconds
+        self.heartbeat_interval = 0.7 #seconds
         self.leadership_timer = None
 
     # We perform a set of functions based on the state of the cluster
@@ -72,7 +73,7 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, RESPONSETIMEOUT))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload, POSTREQUESTTIMEOUT))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -80,7 +81,7 @@ class Cluster:
                 else:
                     print("Can't vote, I am requesting for votes!")
             responses = await asyncio.gather(*tasks)
-        
+
         print("Printing response from post request in async_op")
         print(responses)
 
@@ -110,48 +111,55 @@ class Cluster:
             "id": 1,
             }
 
-        responses = await asyncio.wait_for(self.async_op(payload), timeout=RESPONSETIMEOUT)
-        #responses = await self.async_op(payload)
+        try:
+            responses = await asyncio.wait_for(self.async_op(payload), timeout=RESPONSETIMEOUT)
+        except asyncio.TimeoutError as e:
+            print(f"Timeout Error: {e}")
+            return None
 
-        for response in responses:
-            if (response is not None) and (response["result"]):
+        if responses:
+            for response in responses:
+                if (response is not None) and (response["result"]):
 
-                print("It seems we received a vote! Let us confirm it")
+                    print("It seems we received a vote! Let us confirm it")
 
-                vote_response = response["result"]["response"]
-                vote_params = response["result"]["params"]
+                    vote_response = response["result"]["response"]
+                    vote_params = response["result"]["params"]
 
-                if vote_response == "responseVote":
-                    if self.proposal_number == vote_params[1]:
-                        print("Yay! - A valid vote from {idx} for proposal {proposal}".format(idx=vote_params[0], proposal=vote_params[1]))
+                    if vote_response == "responseVote":
+                        if self.proposal_number == vote_params[1]:
+                            print("Yay! - A valid vote from {idx} for proposal {proposal}".format(idx=vote_params[0], proposal=vote_params[1]))
 
-                        #Confirm it is not a duplicate vote
-                        if vote_params[0] not in self.votes[self.proposal_number]:
-                            self.votes[self.proposal_number].append(vote_params[0])
+                            #Confirm it is not a duplicate vote
+                            if vote_params[0] not in self.votes[self.proposal_number]:
+                                self.votes[self.proposal_number].append(vote_params[0])
+                            else:
+                                print("Dang, it is a duplicate vote :(")
+                                continue
                         else:
-                            print("Dang, it is a duplicate vote :(")
+                            print("Dang, it is an invalid proposal number :(")
                             continue
+
+                    #A possible different message or just an invalid vote
                     else:
-                        print("Dang, it is an invalid proposal number :(")
+                        print("Dang, it is an invalid vote or response:(")
                         continue
-                
-                #A possible different message or just an invalid vote
-                else:
-                    print("Dang, it is an invalid vote or response:(")
-                    continue
 
-        print("Number of votes received: {votes}".format(votes=len(self.votes[self.proposal_number])))
+            print("Number of votes received: {votes}".format(votes=len(self.votes[self.proposal_number])))
 
-        if len(self.votes[self.proposal_number]) >= leader_size:
+            if len(self.votes[self.proposal_number]) >= leader_size:
             #We can now execute the leader role functions - send ackVote
 
-            with open('/tmp/eval_da.txt', 'a') as fpx:
-                fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+                with open('/tmp/eval_da.txt', 'a') as fpx:
+                    fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-            self.state = 'leader'
+                self.state = 'leader'
+            else:
+                return None
+                #print("We restart the election cycle as member at next proposal {proposal} \n\n\n".format(proposal=(self.proposal_number + 1)))
+                self.state = 'member'
         else:
             return None
-            #print("We restart the election cycle as member at next proposal {proposal} \n\n\n".format(proposal=(self.proposal_number + 1)))
             self.state = 'member'
 
 
@@ -162,7 +170,7 @@ class Cluster:
 
         # We wait for a random amount of time - there could be a leader soon
         #time.sleep(round(random.uniform(0.0001, 0.0004), 6)) # seconds latency range
-        time.sleep(random.randint(30, 99) / 100.0)
+        time.sleep(random.randint(30, 100) / 100.0)
 
         if self.leaderx:
             print("I have self leaderx: {rx}".format(rx=self.leaderx["leader"]))
@@ -180,7 +188,7 @@ class Cluster:
 
         else:
             with open('/tmp/eval_da.txt', 'a') as fpm:
-                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))            
+                fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
         # Check if first instance/run
         if self.leadership_timer is None:
@@ -212,7 +220,7 @@ class Cluster:
             "id": 2,
             }
 
-        
+
         while True:
 
             if self.state == 'leader' and cluster.state == 'leader':
@@ -223,7 +231,7 @@ class Cluster:
                     tasks = []
                     for member in self.members:
                         # Only request for votes from other members
-                        if member["cluster_id"] != self.member_id:                        
+                        if member["cluster_id"] != self.member_id:
                             try:
                                 task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, RESPONSETIMEOUT))
                                 tasks.append(task)
@@ -245,7 +253,7 @@ class Cluster:
 
 
     def voter(self, member_id, proposal_number):
-        
+
         print('\n\nVoter Method')
 
         voter_id = cluster.member_id
@@ -303,7 +311,7 @@ class Cluster:
         else:
             return response_nack
 
- 
+
 
     async def leader(self):
         print('\nLeader Role')
@@ -374,11 +382,11 @@ class Cluster:
         #At the receipt of requestVote, the member state is changed to voter
 
         print("requestVote request from member: {member} with proposal: {proposal}".format(member=member_id, proposal=proposal_number))
-    
+
         result = Cluster.voter(self, member_id, proposal_number)
 
         #result = {"response": "responseVote", "message": "Success", "status": 200}
-   
+
         if result:
             print("Now providing a responseVote or noVote to client")
             print(result)
@@ -450,9 +458,9 @@ class Cluster:
 
     @method
     def pollLeader() -> Result:
-        # Candidate can always poll the leader 
+        # Candidate can always poll the leader
         return None
- 
+
 
 async def make_post_request(peer_id, payload, timeout):
     # Send the message to the specified peer
