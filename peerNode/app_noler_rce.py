@@ -122,7 +122,7 @@ class Cluster:
 
         self.proposal_number = proposal_number + 1
         self.votes = {self.proposal_number: []}
-        leader_size = len(self.members) // 2 + 1  #to add + 1 with at least 3 nodes
+        leader_size = len(self.members) // 2  #node votes itself by default
 
         print("A new election cycle started with proposal {proposal} at time {ts}".format(proposal=self.proposal_number, ts=time.time()))
 
