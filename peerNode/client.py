@@ -26,40 +26,18 @@ def push_to_graphite(metrics):
     try:
         sock = socket.socket()
         sock.connect((CARBON_SERVER, CARBON_PORT))
+        sock.settimeout(5)
         try:
             sock.sendall(str.encode(metrics))
             print("Successfully pushed to Graphite")
         except Exception as e:
             print (e)
+            return
         sock.close()
     except Exception as me:
         #logging.error("Unable to push metrics to graphite")
         print(me)
-
-#def pull_from_graphite(metrics):
-    #http://ms0829.utah.cloudlab.us/render?target=128.110.217.54:5001.Network.L&format=json
-
-    #clusters = retrieve_clusters_info()
-    #for cluster in clusters:
-    #    print("Each cluster metrics")
-
-    #    url = urljoin(CARBON_SERVER, '/render')
-    #    response = self.get(url, params={
-    #        'target': metrics,
-    #        'format': 'json',
-    #        'from': '-%ss' % query_from,
-    #    })
-    #    data = response.json()
-    #    A = requests.get(CARBON_SERVER)
-
-#def compute_profile():
-    #print("Please compute the profile")
-
-#def requestVote():
-    #print("A request to be voted")
-
-#def responseVote():
-    #print("I voted for you")
+        return
 
 def retrieve_save_peer_resources(cluster):
     try:

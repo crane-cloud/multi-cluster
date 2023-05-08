@@ -39,7 +39,7 @@ def get_throughtput(host, port):
         client.port = port
         client.protocol = 'tcp'
         client.zerocopy = True
-        client.duration = int(4)
+        client.duration = int(3)
         
         print('Connecting to {0}:{1}'.format(client.server_hostname, client.port))
         result = client.run()
@@ -70,10 +70,3 @@ def check_network_resources(host, port):
     
     print(network_resources)
     return network_resources
-
-## Manual test
-#def main():
-#    check_network_resources("128.110.217.44", 5201)
-
-#if __name__ == '__main__':
-#    main()
