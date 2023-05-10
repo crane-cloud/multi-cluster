@@ -1,7 +1,7 @@
 import requests
-from  test_metrics.get_metrics import get_availability, generic_get_direct_percentile_value  
-from test_metrics.network_compute_helpers import get_average
-from test_metrics.compute_weights import handle_metrics_list
+from  profile_controller.get_metrics import get_availability, generic_get_direct_percentile_value  
+from profile_controller.network_compute_helpers import get_average
+from profile_controller.compute_weights import handle_metrics_list
 import threading
 
 # from profiles_cache import 

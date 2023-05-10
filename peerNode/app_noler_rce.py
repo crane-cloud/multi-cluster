@@ -11,11 +11,17 @@ import asyncio
 import aiohttp
 from flask import Flask, request, Response
 import datetime
+from profile_controller.controller import profile_controller
+
+#cache requirements
+import functools
+import json
+from collections import deque
 
 
 # 1 - Rename the test_metrics to profile-controller
 # 2 - Import the queue-related functions (in your client.py) here
-# 3 - Declare the queue just befoe the Cluster class
+# 3 - Declare the queue just before the Cluster class
 # 4 - Ensure that def get_profile_by_cluster_id(member_id): returns profile of a member from the queue
 
 
@@ -35,6 +41,7 @@ ip_address = socket.gethostbyname(hostname)
 port = int(os.getenv("LE_PORT", 5002))
 
 
+cached_data_queue = deque(maxlen=10)
 class Cluster:
     # The initial state of a cluster member (the member may eventually take on the roles of voter, leader or candidate)
     def __init__(self, member_id, state, members):
@@ -583,10 +590,15 @@ async def make_post_request(peer_id, payload, timeout):
 
 #Get profile of the member given the member_id
 def get_profile_by_cluster_id(member_id):
-    for member in members:
-        if member['cluster_id'] == member_id:
-            return member['profile']
-    return None
+    # for member in members:
+    #     if member['cluster_id'] == member_id:
+    #         return member['profile']
+    # return None
+    cluster_object = find_member_data(member_id)
+    
+    if cluster_object is None:
+        return None
+    return cluster_object['profile']
 
 #Functions to compute the cache data
 
@@ -599,17 +611,15 @@ def cached_data():
 
 def get_cached_data():
     if not cached_data_queue:
-        return []
+        cached_data()
     return json.loads(cached_data_queue[-1])
 
 def run_cached_data():
     while True:
-        print(cached_data())
-
+        cached_data()
         for member in members:
-            
-            get_profile_by_cluster_id(member_id=member['cluster_id'])
-            
+            print(get_profile_by_cluster_id(member['cluster_id']))
+
         print("Sleeping for 10 seconds")
         time.sleep(10)
 
@@ -619,6 +629,28 @@ def index():
     req = request.get_data().decode()
     response = dispatch(req)
     return Response(str(response), status=200, mimetype='application/json')
+
+def find_member_data(target_ip):
+    # target_ip = "129.232.230.130:5001"
+    cached_data = get_cached_data()
+    # print(cached_data)
+    for item in cached_data:
+        if item['against_cluster_ip'].split(':')[0] == target_ip.split(':')[0]:
+            name = item['against_cluster_ip']
+            cluster_id = item['against_cluster_ip']
+            ip_address, port = item['against_cluster_ip'].split(':')
+  
+            new_object = {
+                'name': name,
+                'ip_address': ip_address,
+                'port': int(port),
+                'cluster_id': cluster_id,
+                'profile': item['profile']
+            }
+            return new_object
+
+    return None
+
 
 
 if __name__ == '__main__':
@@ -648,7 +680,7 @@ if __name__ == '__main__':
 
     # Create a logger for the profile thread
     profile_logger = logging.getLogger('profile')
-    pofile_logger.setLevel(logging.INFO)
+    profile_logger.setLevel(logging.INFO)
     handlerp = logging.StreamHandler()
     handlerp.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     profile_logger.addHandler(handlerp)
