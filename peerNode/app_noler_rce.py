@@ -13,6 +13,12 @@ from flask import Flask, request, Response
 import datetime
 
 
+# 1 - Rename the test_metrics to profile-controller
+# 2 - Import the queue-related functions (in your client.py) here
+# 3 - Declare the queue just befoe the Cluster class
+# 4 - Ensure that def get_profile_by_cluster_id(member_id): returns profile of a member from the queue
+
+
 ELECTIONTIMEOUT = 2.0 #seconds
 RESPONSETIMEOUT = 1.5 #seconds
 POSTREQUESTTIMEOUT = 1.0 #seconds
@@ -582,6 +588,30 @@ def get_profile_by_cluster_id(member_id):
             return member['profile']
     return None
 
+#Functions to compute the cache data
+
+@functools.lru_cache(maxsize=None)
+def cached_data():
+    print("Retriving new data points:")
+    data = profile_controller()
+    cached_data_queue.append(json.dumps(data))
+    return cached_data_queue[-1] 
+
+def get_cached_data():
+    if not cached_data_queue:
+        return []
+    return json.loads(cached_data_queue[-1])
+
+def run_cached_data():
+    while True:
+        print(cached_data())
+
+        for member in members:
+            
+            get_profile_by_cluster_id(member_id=member['cluster_id'])
+            
+        print("Sleeping for 10 seconds")
+        time.sleep(10)
 
 # JSON-RPC routes
 @app.route('/', methods=['POST'])
@@ -616,6 +646,13 @@ if __name__ == '__main__':
     handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     cluster_logger.addHandler(handler)
 
+    # Create a logger for the profile thread
+    profile_logger = logging.getLogger('profile')
+    pofile_logger.setLevel(logging.INFO)
+    handlerp = logging.StreamHandler()
+    handlerp.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    profile_logger.addHandler(handlerp)
+
     # Configure Flask's own logging
     app.logger.setLevel(logging.INFO)
     app.logger.addHandler(handler)
@@ -623,8 +660,13 @@ if __name__ == '__main__':
     print("Starting the cluster thread")
     cluster_thread = threading.Thread(target=cluster.run)
     cluster_thread.daemon = True
-    cluster_thread.start()
+    #cluster_thread.start()
+
+    print("Starting the profile thread")
+    profile_thread = threading.Thread(target=run_cached_data())
+    profile_thread.daemon = True
+    profile_thread.start()
 
 
-    print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
-    app.run(debug=False, host = ip_address, port=port)
+    #print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
+    #app.run(debug=False, host = ip_address, port=port)
