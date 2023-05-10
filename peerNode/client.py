@@ -17,7 +17,7 @@ import json
 from collections import deque
 import threading
 
-from test_metrics.controller import profile_controller
+from profile_controller.controller import profile_controller
 
 hostname = socket.gethostname()
 CARBON_SERVER = socket.gethostbyname(hostname)
@@ -35,40 +35,50 @@ def push_to_graphite(metrics):
     try:
         sock = socket.socket()
         sock.connect((CARBON_SERVER, CARBON_PORT))
+        sock.settimeout(5)
         try:
             sock.sendall(str.encode(metrics))
             print("Successfully pushed to Graphite")
         except Exception as e:
             print (e)
+            return
         sock.close()
     except Exception as me:
         #logging.error("Unable to push metrics to graphite")
         print(me)
+        return
 
-#def pull_from_graphite(metrics):
-    #http://ms0829.utah.cloudlab.us/render?target=128.110.217.54:5001.Network.L&format=json
+def retrieve_save_peer_resources(cluster):
+    try:
+        resources = check_cluster_resources(cluster["ip_address"], cluster["port"])
+        if resources:
+            resource_message = [
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "P", resources["cpu"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "M", resources["memory"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "D", resources["disk"], int(time.time()))
+            ]
+            graphite_r_message = '\n'.join(resource_message) + '\n'    
+            push_to_graphite(graphite_r_message)
+        else:
+            return None
+    except Exception as e:
+        print(e)
 
-    #clusters = retrieve_clusters_info()
-    #for cluster in clusters:
-    #    print("Each cluster metrics")
-
-    #    url = urljoin(CARBON_SERVER, '/render')
-    #    response = self.get(url, params={
-    #        'target': metrics,
-    #        'format': 'json',
-    #        'from': '-%ss' % query_from,
-    #    })
-    #    data = response.json()
-    #    A = requests.get(CARBON_SERVER)
-
-#def compute_profile():
-    #print("Please compute the profile")
-
-#def requestVote():
-    #print("A request to be voted")
-
-#def responseVote():
-    #print("I voted for you")
+def retrieve_save_network_resources(cluster, port):
+    try:
+        network = check_network_resources(cluster["ip_address"], port)
+        if network:
+            network_message = [
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "T", network["throughput"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "L", network["latency"], int(time.time())),
+                '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "J", network["jitter"], int(time.time()))
+                ]
+            graphite_n_message = '\n'.join(network_message) + '\n'    
+            push_to_graphite(graphite_n_message)
+        else:
+            return None
+    except Exception as e:
+        print(e)
 
 @functools.lru_cache(maxsize=None)
 def cached_data():
@@ -91,46 +101,35 @@ def run_cached_data():
 def main():
 
     while True:
-
+        # Fetch all the clusters from the view
         clusters = retrieve_clusters_info()
         
+        # For each cluster, retrieve, measure and push to the graphite tsdb
         for cluster in clusters:
             
+            # We first check for the availability of the cluster
             availability = check_availability(cluster["ip_address"], cluster["port"])
 
+            # If the cluster is available, we can go ahead and measure/retrieve the values
             if availability == 1:
+                retrieve_save_peer_resources(cluster)
+                retrieve_save_network_resources(cluster, IPERF)
 
-                resources = check_cluster_resources(cluster["ip_address"], cluster["port"])
-                network = check_network_resources(cluster["ip_address"], IPERF)
-
-                if resources:
-                    resource_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "P", resources["cpu"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "M", resources["memory"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Resource", "D", resources["disk"], int(time.time()))
-                        ]
-                    graphite_r_message = '\n'.join(resource_message) + '\n'    
-                    push_to_graphite(graphite_r_message)
-
-                if network:
-                    network_message = [
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "T", network["throughput"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "L", network["latency"], int(time.time())),
-                        '%s.%s.%s %f %d' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Network", "J", network["jitter"], int(time.time()))
-                        ]
-                    graphite_n_message = '\n'.join(network_message) + '\n'    
-                    push_to_graphite(graphite_n_message)
-
+            # Regardless of the peer availability, the A metric should have a value
             availability_metric = '%s.%s.%s %d %d\n' % (cluster["cluster_id"].replace('.','_').replace(':','_'), "Availability", "A", availability, int(time.time()))
             push_to_graphite(availability_metric)
         
+        # We set the loop sleep time to 10 minutes
         time.sleep(600)
 
 if __name__ == '__main__':
     init.main()
     # Start a new thread to run the cached_data() function periodically
-    t = threading.Thread(target=run_cached_data)
-    t.daemon = True
-    t.start()
+    # t = threading.Thread(target=run_cached_data)
+    # t.daemon = True
+    # t.start()
+
+    # Allow fpr the nodes to register at the view
     time.sleep(60)
+    
     main()

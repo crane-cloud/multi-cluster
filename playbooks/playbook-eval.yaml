@@ -1,0 +1,31 @@
+---
+- hosts: cloudlab
+  remote_user: amwotil
+  become: true
+  tasks:
+    - name: install package dependencies
+      apt:
+        name: "{{item}}"
+        state: present
+        update_cache: yes
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - make
+        - software-properties-common
+        - python3-pip
+    - name: clone the MC github repository
+      git:
+        repo: https://github.com/crane-cloud/multi-cluster.git
+        dest: /users/amwotil/noler
+        version: ft-performance-optimization
+        clone: yes
+        update: yes
+        force: yes
+    - name: install pip3 packages for the app
+      pip:
+        requirements: /users/amwotil/noler/peerNode/requirements.txt
+    - name: run the LE protocol
+      shell: "python3  /users/amwotil/noler/peerNode/app_le.py"
