@@ -1,22 +1,11 @@
-# assumming availability is 1, since no availablity data is returned
-# computing the profile of cr-dar in relation to all the other profiles
+import socket
 
-# W1P: 0.4
-# W1M: 0.3
-# W1D: 0.3
-# W1T: 0.4
-# W1L: 0.4
-# W1J: 0.2
-# W1A: 1
-# W2R: 0.35
-# W2N: 0.45
-# W2A: 0.2
+hostname = socket.gethostname()
+ip_address = socket.gethostbyname(hostname)
 
 class WeightClass:
-    #WEIGHTs
-    #resources
     def __init__(self):
-        self.base_cluster_metrics = {}
+        self.base_cm = {}
 
     W1P = 0.4
     W1M = 0.3
@@ -30,75 +19,62 @@ class WeightClass:
     #availability
     W1A = 1
     W2A = 0.2
+
     # our base cluster id
-    dr_cluster_ip = '196.32.212.213:5001'
-    #assumed_availability = 1
+    base = ip_address + ":5001"
 
     #Network target values
-    Latence_target = 24
-    Jitter_target = 3.26
-    Throughput_target = 894
+    l_t = 24
+    j_t = 3.26
+    t_t = 894
 
     
-    
-weightInstance = WeightClass()
+wObj= WeightClass()
 
 def handle_metrics_list(data):
-    formated_data =format_matrics_data(data)
-    cluster_profiles_in_relation_to_base =[]
+    formated_data = format_metrics_data(data)
+    cluster_profiles = []
     for metric in formated_data:
-        # network_sumation =  compute_network_profile(metric)
-        network_sumation = compute_network_profile_using_targets(metric)
-        resource_sumation =   compute_resource_profile(metric)
-        availability_sumation =  compute_availability_profile(metric)
-        profile = overall_profile(resource_sumation,network_sumation,availability_sumation)
-        cluster_profiles_in_relation_to_base.append({
-            'based_on_cluster_id': weightInstance.dr_cluster_ip,
-            'against_cluster_ip': metric['ip'],
-            'network_value':network_sumation,
-            'resource_value':resource_sumation,
-            'availability_value':availability_sumation,
+        np = compute_np(metric)
+        rp = compute_rp(metric)
+        ap = compute_ap(metric)
+        profile =  profile(rp, np, ap)
+        cluster_profiles.append({
+            'base': wObj.base,
+            'target': metric['ip'],
+            'n':np,
+            'r':rp,
+            'a':ap,
             'profile': profile
         })
 
-    return cluster_profiles_in_relation_to_base
+    return cluster_profiles
 
 # remove base cluster data from metrics list
-def format_matrics_data(data):
-    data_without_base_cluster = []
-    for data_item in data:
-        if data_item['ip'] != weightInstance.dr_cluster_ip:
-            data_without_base_cluster.append(data_item)
-        if data_item['ip'] == weightInstance.dr_cluster_ip:
-            weightInstance.base_cluster_metrics = data_item
-    return data_without_base_cluster
+def format_metrics_data(data):
+    data__base = []
+    for item in data:
+        if item['ip'] != wObj.base:
+           data_base.append(item)
+        if item['ip'] == wObj.base:
+            wObj.base_cm = data_item
+    return data__base
 
-def compute_network_profile(formated_metric):
-    throughput = (weightInstance.W1T * weightInstance.base_cluster_metrics['throughput'])/(formated_metric['throughput'] + weightInstance.base_cluster_metrics['throughput'])
-    jitter= (weightInstance.W1J * weightInstance.base_cluster_metrics['jitter'])/(formated_metric['jitter'] + weightInstance.base_cluster_metrics['jitter'])
-    latency = (weightInstance.W1L * weightInstance.base_cluster_metrics['latency'])/(formated_metric['latency'] + weightInstance.base_cluster_metrics['latency'])
-    return throughput + jitter + latency
+def compute_np(metric):
+    t = (wObj.W1T * metric['throughput'])/(metric['throughput'] + wObj.t_t)
+    j = (wObj.W1J * wObj.j_t)/(metric['jitter'] + wObj.j_t)
+    l = (wObj.W1L * wObj.l_t)/(metric['latency'] + wObj.l_t)
+    return t + l + j
 
-def compute_network_profile_using_targets(formated_metric):
-    throughput = (weightInstance.W1T * formated_metric['throughput'])/(formated_metric['throughput'] + weightInstance.Throughput_target)
-    jitter= (weightInstance.W1J * weightInstance.Jitter_target)/(formated_metric['jitter'] + weightInstance.Jitter_target)
-    latency = (weightInstance.W1L * weightInstance.Latence_target)/(formated_metric['latency'] + weightInstance.Latence_target)
-    return throughput + jitter + latency
+def compute_rp(metric):
+    d = (wObj.W1D * wObj.base_cm['disk'])/(metric['disk'] + wObj.base_cm['disk'])
+    p = (wObj.W1P * wObj.base_cm['cpu'])/(metric['cpu'] + wObj.base_cm['cpu'])
+    m = (wObj.W1M * wObj.base_cm['memory'])/(metric['memory'] + wObj.base_cm['memory'])
+    return d + p + m
 
-def compute_resource_profile(formated_metric):
-    disk = (weightInstance.W1D * weightInstance.base_cluster_metrics['disk'])/(formated_metric['disk'] + weightInstance.base_cluster_metrics['disk'])
-    cpu= (weightInstance.W1P * weightInstance.base_cluster_metrics['cpu'])/(formated_metric['cpu'] + weightInstance.base_cluster_metrics['cpu'])
-    memory = (weightInstance.W1M * weightInstance.base_cluster_metrics['memory'])/(formated_metric['memory'] + weightInstance.base_cluster_metrics['memory'])
-    return disk + cpu + memory
+def compute_ap(metric):
+    return (wObj.W1A*wObj.base_cm['availability'])/(wObj.base_cm['availability']+metric['availability'])
 
-def compute_availability_profile(formated_metric):
-    return (weightInstance.W1A*weightInstance.base_cluster_metrics['availability'])/(weightInstance.base_cluster_metrics['availability']+formated_metric['availability'])
-
-def overall_profile(Resource,Network,Availablity):
-    profile = (Resource * weightInstance.W2R)+(Network * weightInstance.W2N ) + (Availablity * weightInstance.W2A )
+def profile(r, n, a):
+    profile = (r * wObj.W2R) + (n * wObj.W2N ) + (a * wObj.W2A)
     return profile
-
-
-# if __name__ == "__main__":
-#    profiles_list =  handle_metrics_list(test_data)
-#    print(profiles_list)

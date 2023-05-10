@@ -16,12 +16,6 @@ import functools
 import json
 from collections import deque
 
-# 1 - Rename the test_metrics to profile-controller
-# 2 - Import the queue-related functions (in your client.py) here
-# 3 - Declare the queue just befoe the Cluster class
-# 4 - Ensure that def get_profile_by_cluster_id(member_id): returns profile of a member from the queue
-
-
 ELECTIONTIMEOUT = 2.0 #seconds
 RESPONSETIMEOUT = 1.5 #seconds
 POSTREQUESTTIMEOUT = 1.0 #seconds
@@ -29,14 +23,13 @@ POSTREQUESTTIMEOUT = 1.0 #seconds
 #Fast path timeouts
 FASTPATH_ELECTIONTIMEOUT = 1.0 #seconds
 
-
 app = Flask(__name__)
-
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
 port = int(os.getenv("LE_PORT", 5002))
 
+cached_data_queue = deque(maxlen=10)
 
 class Cluster:
     # The initial state of a cluster member (the member may eventually take on the roles of voter, leader or candidate)
@@ -592,7 +585,7 @@ def get_profile_by_cluster_id(member_id):
         return None
     return cluster_object['profile']
 
-#Functions to compute the cache data
+#Functions to update and retrieve the cache data
 @functools.lru_cache(maxsize=None)
 def cached_data():
     print("Retriving new data points:")
@@ -611,16 +604,16 @@ def run_cached_data():
         for member in members:
             print(get_profile_by_cluster_id(member['cluster_id']))
 
-        print("Sleeping for 10 seconds")
+        print("Sleeping for 20 seconds")
         time.sleep(10)
 
 def find_member_data(target_id):
     cached_data = get_cached_data()
     for item in cached_data:
-        if item['against_cluster_ip'].split(':')[0] == target_id.split(':')[0]:
-            name = item['against_cluster_ip']
-            cluster_id = item['against_cluster_ip']
-            ip_address, port = item['against_cluster_ip'].split(':')
+        if item['target'].split(':')[0] == target_id.split(':')[0]:
+            name = item['target']
+            cluster_id = item['target']
+            ip_address, port = item['target'].split(':')
   
             new_object = {
                 'name': name,
@@ -666,7 +659,7 @@ if __name__ == '__main__':
 
     # Create a logger for the profile thread
     profile_logger = logging.getLogger('profile')
-    pofile_logger.setLevel(logging.INFO)
+    profile_logger.setLevel(logging.INFO)
     handlerp = logging.StreamHandler()
     handlerp.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
     profile_logger.addHandler(handlerp)
@@ -684,7 +677,6 @@ if __name__ == '__main__':
     profile_thread = threading.Thread(target=run_cached_data())
     profile_thread.daemon = True
     profile_thread.start()
-
 
     print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
     app.run(debug=False, host = ip_address, port=port)

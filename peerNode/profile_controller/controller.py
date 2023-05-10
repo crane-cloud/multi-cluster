@@ -1,12 +1,14 @@
 import requests
-from  profile_controller.get_metrics import get_availability, generic_get_direct_percentile_value  
+from  profile_controller.get_metrics import get_availability, getp_value  
 from profile_controller.network_compute_helpers import get_average
 from profile_controller.compute_weights import handle_metrics_list
 import threading
 
-# from profiles_cache import 
-
 clusters_url = 'http://view.cranecloud.africa:5000/clusters'
+
+hostname = socket.gethostname()
+ip_address = socket.gethostbyname(hostname)
+cluster_id = ip_address + ":5001"
 
 def get_cluster(url):
     # emulate source of the metrics
@@ -24,22 +26,16 @@ def get_cluster(url):
         return None
 
 def get_metrics(ip):
-    # latency95percentile =  get_percentiles(generic_get_metrics(ip,'Network.L'),95)
-    # jitter95percentile =  get_percentiles(generic_get_metrics(ip, 'Network.J'),95)
-    # throughput95percentile =  get_percentiles(generic_get_metrics(ip, 'Network.T'),95)
-    # cpu95percentile =  get_percentiles(generic_get_metrics(ip, 'Resource.P'),95)
-    # memory95percentile =  get_percentiles(generic_get_metrics(ip, 'Resource.M'),95)
-    # disk95percentile =  get_percentiles(generic_get_metrics(ip, 'Resource.D'),95)
-    latency95percentile =  generic_get_direct_percentile_value(ip,'Network.L')
-    jitter95percentile =  generic_get_direct_percentile_value(ip, 'Network.J')  
-    throughput95percentile =  generic_get_direct_percentile_value(ip, 'Network.T')
-    cpu95percentile =  generic_get_direct_percentile_value(ip, 'Resource.P')
-    memory95percentile =  generic_get_direct_percentile_value(ip, 'Resource.M')
-    disk95percentile =  generic_get_direct_percentile_value(ip, 'Resource.D')
-    availabilityAverage=  get_average(get_availability(ip))
+    lp95 =  getp_value(ip,'Network.L')
+    jp95 =  getp_value(ip, 'Network.J')  
+    tp95 =  getp_value(ip, 'Network.T')
+    pp95 =  getp_value(ip, 'Resource.P')
+    mp95 =  getp_value(ip, 'Resource.M')
+    dp95 =  getp_value(ip, 'Resource.D')
+    av =  get_average(get_availability(ip))
 
-    return {"latency":latency95percentile,"jitter":jitter95percentile,"throughput":throughput95percentile,
-           "cpu":cpu95percentile,"memory":memory95percentile,"disk":disk95percentile, "availability":availabilityAverage, "ip":ip}
+    return {"latency":lp95, "jitter":jp95, "throughput":tp95,
+           "cpu":pp95,"memory":mp95,"disk":dp95, "availability":av, "ip":ip}
 
 def profile_controller():
     cluster_ips =  get_cluster(clusters_url)
@@ -47,38 +43,13 @@ def profile_controller():
     cluster_metrics = []
     threads = []
     for ip in cluster_ips:
+        if cluster_id == ip:
+            continue
         t = threading.Thread(target=lambda: cluster_metrics.append(get_metrics(ip)))
         t.start()
         threads.append(t)
         
     for t in threads:
         t.join()
-    # print("---Collected Metrics--")
-    # print(cluster_metrics)
     weighted_metrics = handle_metrics_list(cluster_metrics)
     return weighted_metrics
-
-
-# if __name__ == "__main__":
-#     # get cluster ips
-#     cluster_ips =  get_cluster(clusters_url)
-#     # get metrics for different clusters
-#     cluster_metrics = []
-#     threads = []
-#     for ip in cluster_ips:
-#         t = threading.Thread(target=lambda: cluster_metrics.append(get_metrics(ip)))
-#         t.start()
-#         threads.append(t)
-        
-#     for t in threads:
-#         t.join()
-#     # print("---Collected Metrics--")
-#     # print(cluster_metrics)
-#     weighted_metrics = handle_metrics_list(cluster_metrics)
-#     # print("---weighted profiles---")
-#     # print(weighted_metrics)
-
-
-
-    
-    
