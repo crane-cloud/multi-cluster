@@ -38,6 +38,8 @@ tcp-latency==0.0.12
 urllib3==1.26.12
 websocket-client==1.4.1
 yarg==0.1.9
+numpy==1.24.2
+scipy==1.10.1
 aiohttp==3.8.1
 asyncio==3.4.3
 flask==2.0.2

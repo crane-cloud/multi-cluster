@@ -11,7 +11,10 @@ import asyncio
 import aiohttp
 from flask import Flask, request, Response
 import datetime
-
+from profile_controller.controller import profile_controller
+import functools
+import json
+from collections import deque
 
 # 1 - Rename the test_metrics to profile-controller
 # 2 - Import the queue-related functions (in your client.py) here
@@ -583,13 +586,13 @@ async def make_post_request(peer_id, payload, timeout):
 
 #Get profile of the member given the member_id
 def get_profile_by_cluster_id(member_id):
-    for member in members:
-        if member['cluster_id'] == member_id:
-            return member['profile']
-    return None
+    cluster_object = find_member_data(member_id)
+    
+    if cluster_object is None:
+        return None
+    return cluster_object['profile']
 
 #Functions to compute the cache data
-
 @functools.lru_cache(maxsize=None)
 def cached_data():
     print("Retriving new data points:")
@@ -599,19 +602,36 @@ def cached_data():
 
 def get_cached_data():
     if not cached_data_queue:
-        return []
+        cached_data()
     return json.loads(cached_data_queue[-1])
 
 def run_cached_data():
     while True:
-        print(cached_data())
-
+        cached_data()
         for member in members:
-            
-            get_profile_by_cluster_id(member_id=member['cluster_id'])
-            
+            print(get_profile_by_cluster_id(member['cluster_id']))
+
         print("Sleeping for 10 seconds")
         time.sleep(10)
+
+def find_member_data(target_id):
+    cached_data = get_cached_data()
+    for item in cached_data:
+        if item['against_cluster_ip'].split(':')[0] == target_id.split(':')[0]:
+            name = item['against_cluster_ip']
+            cluster_id = item['against_cluster_ip']
+            ip_address, port = item['against_cluster_ip'].split(':')
+  
+            new_object = {
+                'name': name,
+                'ip_address': ip_address,
+                'port': int(port),
+                'cluster_id': cluster_id,
+                'profile': item['profile']
+            }
+            return new_object
+
+    return None
 
 # JSON-RPC routes
 @app.route('/', methods=['POST'])
@@ -625,8 +645,6 @@ if __name__ == '__main__':
 
     # This retrieves members of the distributed system [Can be provided to any of the roles]
     ##members = retrieve_clusters_info()
-
-    #profiles for cr-jhb
 
     members = [{'name': 'cr-dar', 'ip_address': '196.32.212.213', 'port': 5002, 'cluster_id': '196.32.212.213:5002', 'profile': 0.31},
            {'name': 'cr-lsk', 'ip_address': '196.32.215.213', 'port': 5002, 'cluster_id': '196.32.215.213:5002', 'profile': 0.20},
@@ -660,7 +678,7 @@ if __name__ == '__main__':
     print("Starting the cluster thread")
     cluster_thread = threading.Thread(target=cluster.run)
     cluster_thread.daemon = True
-    #cluster_thread.start()
+    cluster_thread.start()
 
     print("Starting the profile thread")
     profile_thread = threading.Thread(target=run_cached_data())
@@ -668,5 +686,5 @@ if __name__ == '__main__':
     profile_thread.start()
 
 
-    #print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
-    #app.run(debug=False, host = ip_address, port=port)
+    print("Starting LE Service on {ip_address}:{port}".format(ip_address=ip_address, port=port))
+    app.run(debug=False, host = ip_address, port=port)
