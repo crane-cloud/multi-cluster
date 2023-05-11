@@ -32,13 +32,13 @@ class WeightClass:
 wObj= WeightClass()
 
 def handle_metrics_list(data):
-    formated_data = format_metrics_data(data)
+    fd_data = format_metrics_data(data)
     cluster_profiles = []
-    for metric in formated_data:
+    for metric in fd_data:
         np = compute_np(metric)
         rp = compute_rp(metric)
         ap = compute_ap(metric)
-        profile =  profile(rp, np, ap)
+        profile =  compute_profile(rp, np, ap)
         cluster_profiles.append({
             'base': wObj.base,
             'target': metric['ip'],
@@ -55,9 +55,9 @@ def format_metrics_data(data):
     data__base = []
     for item in data:
         if item['ip'] != wObj.base:
-           data_base.append(item)
+           data__base.append(item)
         if item['ip'] == wObj.base:
-            wObj.base_cm = data_item
+            wObj.base_cm = item
     return data__base
 
 def compute_np(metric):
@@ -75,6 +75,6 @@ def compute_rp(metric):
 def compute_ap(metric):
     return (wObj.W1A*wObj.base_cm['availability'])/(wObj.base_cm['availability']+metric['availability'])
 
-def profile(r, n, a):
+def compute_profile(r, n, a):
     profile = (r * wObj.W2R) + (n * wObj.W2N ) + (a * wObj.W2A)
     return profile

@@ -3,6 +3,7 @@ from  profile_controller.get_metrics import get_availability, getp_value
 from profile_controller.network_compute_helpers import get_average
 from profile_controller.compute_weights import handle_metrics_list
 import threading
+import socket
 
 clusters_url = 'http://view.cranecloud.africa:5000/clusters'
 
@@ -43,8 +44,6 @@ def profile_controller():
     cluster_metrics = []
     threads = []
     for ip in cluster_ips:
-        if cluster_id == ip:
-            continue
         t = threading.Thread(target=lambda: cluster_metrics.append(get_metrics(ip)))
         t.start()
         threads.append(t)
