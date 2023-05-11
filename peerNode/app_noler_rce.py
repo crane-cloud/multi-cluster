@@ -493,7 +493,7 @@ class Cluster:
         #If this expires, and there is no ackVote message - we begin an election phase
 
         time.sleep(self.leadership_vote_timeout)
-        
+
         if self.leadership_vote_timer and self.leadership_vote_timer.is_alive():
             print("Leadership vote timer set to expire in", self.leadership_vote_timer.interval, "seconds")
 
@@ -570,7 +570,7 @@ class Cluster:
 
 
     @method
-    def informMember(self, leader_id, profile, proposal_number):
+    async def informMember(self, leader_id, profile, proposal_number):
         #If a member receives this message (should be from the leader), the leaderShipTermTimer is reset
 
         print("Received the informMember message from leader {leader} with proposal {proposal} and MY profile {profile}".format(leader=leader_id, proposal=proposal_number, profile=profile))
