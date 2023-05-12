@@ -16,6 +16,7 @@ import functools
 import json
 from collections import deque
 from util import retrieve_clusters_info
+import copy
 
 ELECTIONTIMEOUT = 2.0 #seconds
 RESPONSETIMEOUT = 1.5 #seconds, used outside class
@@ -117,7 +118,7 @@ class Cluster:
                     #print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
 
                     payload_update = copy.deepcopy(payload)
-                    
+
                     payload_update["params"]["profile"] = profilex
                     print("Payload Election: {payload_update}".format(payload=payload_update))
 
