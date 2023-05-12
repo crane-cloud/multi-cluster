@@ -388,7 +388,7 @@ class Cluster:
                 if profile > member_profile:
                     print("My profile {profile1} is better than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
 
-                    if cluster.state != 'candidate':
+                    if cluster.state != 'candidate' or cluster.state != 'leader':
                         print("Changing state to candidate.....")
                         # start the leadership_vote_timer
                         cluster.reset_leadership_vote_timer()
@@ -451,6 +451,9 @@ class Cluster:
     async def leader(self):
         print('\nLeader Role')
         #As a leader, send ackVote message to all the members
+
+        self.leaderx = {"leader": self.member_id, "proposal_number": self.proposal_number, "profile": 1}
+        self.voted = {"proposal_number": self.proposal_number, "voted": self.member_id, "profile": 1}
 
         print("As leader, this is my ID: {idx} and proposal number: {proposal}".format(idx=self.member_id, proposal=self.proposal_number))
 
