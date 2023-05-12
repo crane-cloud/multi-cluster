@@ -112,10 +112,12 @@ class Cluster:
 
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
-                    profile = get_profile_by_cluster_id(member["cluster_id"])
+                    
                     try:
-                        print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profile))
-                        payload["params"]["profile"] = profile
+                        profilex = get_profile_by_cluster_id(member["cluster_id"])
+                        print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profilex))
+                        payload["params"]["profile"] = profilex
+                        print("Payload: {payload}".format(payload=payload))
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
@@ -575,6 +577,8 @@ class Cluster:
     @method
     def informMember(self, leader_id, profile, proposal_number):
         #If a member receives this message (should be from the leader), the leaderShipTermTimer is reset
+
+        leader_profile = get_profile_by_cluster_id(leader_id)
 
         print("Received the informMember message from leader {leader} with proposal {proposal} and MY profile {profile}".format(leader=leader_id, proposal=proposal_number, profile=profile))
         print("The leader {leader} with proposal {proposal} is alive: its profile {profile1} - our profile {profile2}".format(leader=leader_id, proposal=proposal_number, profile1=leader_profile, profile2=profile))
