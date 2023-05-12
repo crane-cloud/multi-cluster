@@ -114,14 +114,14 @@ class Cluster:
                 if member["cluster_id"] != self.member_id:
                     #payload["params"]["profile"] = None
                     profilex = get_profile_by_cluster_id(member["cluster_id"])
-                    print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
+                    #print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
 
-                    payload_update = payload.copy()
-                    payload_update["params"]["profile"] = profilex
-                    print("Payload Election: {payload_update}".format(payload_update=payload_update))
+                    #payload_update = payload.copy()
+                    payload["params"]["profile"] = profilex
+                    print("Payload Election: {payload}".format(payload=payload))
 
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_update, self.post_request_timeout))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload.copy(), self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
@@ -148,7 +148,7 @@ class Cluster:
                 fps.write("Election: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
 
-        payload = {
+        payload_request_votes = {
             "method": "requestVote",
             "params": {
                 "self": None,
@@ -161,7 +161,7 @@ class Cluster:
             }
 
         try:
-            responses = await asyncio.wait_for(self.async_op(payload), timeout=self.response_timeout)
+            responses = await asyncio.wait_for(self.async_op(payload_request_votes), timeout=self.response_timeout)
         except asyncio.TimeoutError as e:
             print(f"Timeout Error: {e}")
             return None
