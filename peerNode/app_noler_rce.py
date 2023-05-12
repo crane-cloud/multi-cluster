@@ -28,8 +28,7 @@ app = Flask(__name__)
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
-#port = int(os.getenv("LE_PORT", 5002))
-port = 5002
+port = int(os.getenv("LE_PORT", 5002))
 
 cached_data_queue = deque(maxlen=10)
 
@@ -742,7 +741,7 @@ if __name__ == '__main__':
     cluster_thread.start()
 
     print("Starting the profile thread")
-    profile_thread = threading.Thread(target=run_cached_data())
+    profile_thread = threading.Thread(target=run_cached_data)
     profile_thread.daemon = True
     profile_thread.start()
 
