@@ -113,9 +113,8 @@ class Cluster:
 
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
-                    #payload["params"]["profile"] = None
                     profilex = get_profile_by_cluster_id(member["cluster_id"])
-                    #print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
+                    print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
 
                     payload_update = copy.deepcopy(payload)
 
@@ -123,7 +122,7 @@ class Cluster:
                     print("Payload Election: {payload_update}".format(payload_update=payload_update))
 
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_update.copy(), self.post_request_timeout))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_update, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
