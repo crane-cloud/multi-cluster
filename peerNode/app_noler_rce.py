@@ -373,13 +373,13 @@ class Cluster:
             "params": [voter_id, proposal_number],
         }
 
+        member_profile = get_profile_by_cluster_id(member_id)
+
         # If never voted or received a leader result
         print("Vote proposal numbers, request: {req} and mine: {ours}".format(req=proposal_number, ours=cluster.proposal_number))
         if (proposal_number > cluster.proposal_number) and (not(cluster.voted)  and not(cluster.leaderx)):
             try:
                 print("Seems we have not voted before\n\n")
-
-                member_profile = get_profile_by_cluster_id(member_id)
 
                 if profile > member_profile:
                     print("My profile {profile1} is better than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
@@ -391,7 +391,7 @@ class Cluster:
                 
                 else:
                     print("My profile {profile1} is worse than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
-                    cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                    cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                     return response_ack
             except:
                 return None
@@ -402,17 +402,15 @@ class Cluster:
                 try:
                     print("A better proposal {proposal} than voted {v} from {idx}\n\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx=member_id))
 
-                    member_profile = get_profile_by_cluster_id(member_id)
-
-                    if member_profile < cluster.voted['profile']:
-                        print("Voted profile {profile1} is better than new member profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=member_profile,idx=member_id))
-                        print("Changing state to candidate.....")
-                        cluster.reset_leadership_vote_timer()
-                        cluster.state = 'candidate'
+                    if profile >= cluster.voted['profile']:
+                        print("Voted MY profile {profile1} is better than new member MY profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=profile,idx=member_id))
+                        #print("Changing state to candidate.....")
+                        #cluster.reset_leadership_vote_timer()
+                        #cluster.state = 'candidate'
                         return response_nack
                     else:
-                        print("Voted profile {profile1} is worse than new member profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=member_profile,idx=member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        print("Voted MY profile {profile1} is worse than new member MY profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=profile,idx=member_id))
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                         return response_ack
                 except:
                     return None
@@ -427,14 +425,12 @@ class Cluster:
             if proposal_number > cluster.leaderx['proposal_number']:
                 try:
 
-                    member_profile = get_profile_by_cluster_id(member_id)
-
-                    if member_profile < cluster.leaderx['profile']:
-                        print("Leader profile {profile1} is better than new member profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=member_profile,idx=member_id))
+                    if profile >= cluster.leaderx['profile']:
+                        print("Leader MY profile {profile1} is better than new member MY profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=profile,idx=member_id))
                         return response_nack
                     else:
-                        print("Leader profile {profile1} is worse than new member profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=member_profile,idx=member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        print("Leader MY profile {profile1} is worse than new member MY profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=profile,idx=member_id))
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                         return response_ack
                 except:
                     return None
@@ -457,7 +453,8 @@ class Cluster:
             "params":{
                 "self": None,
                 "member_id": self.member_id,
-                "proposal_number": self.proposal_number
+                "proposal_number": self.proposal_number,
+                "profile": None
                 },
             "jsonrpc": "2.0",
             "id": 3,
@@ -471,6 +468,10 @@ class Cluster:
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
                     try:
+                        profilea = get_profile_by_cluster_id(member["cluster_id"])
+                        print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profilea))
+                        payload_ack["params"]["profile"] = profilea
+                        print("Payload at ackVote: {payload}".format(payload=payload_ack))
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload_ack, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
@@ -536,13 +537,13 @@ class Cluster:
             return None
 
     @method
-    def ackVote(self, member_id, proposal_number):
+    def ackVote(self, member_id, proposal_number, profile):
         #A voter or member receives the ackVote message as confirmation of winner (leader)
 
-        leader_profile = get_profile_by_cluster_id(member_id)
+        #leader_profile = get_profile_by_cluster_id(member_id)
 
         print("Cluster state at ackVote {ack}".format(ack=cluster.state))
-        cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id, "profile": leader_profile}
+        cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id, "profile": profile}
 
         with open('/tmp/eval_da.txt', 'a') as fp:
             fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
@@ -552,7 +553,7 @@ class Cluster:
 
         print("Updated my proposal number to: {proposal}".format(proposal=cluster.leaderx["proposal_number"]))
 
-        print("I have a new leader {leader} (voted or not) with proposal {proposal} and profile {profile}!".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], profile=cluster.leaderx["profile"]))
+        print("I have a new leader {leader} (voted or not) with proposal {proposal} and MY profile {profile}!".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], profile=cluster.leaderx["profile"]))
 
         response = {
             "response": "ackEd",
@@ -581,15 +582,15 @@ class Cluster:
         leader_profile = get_profile_by_cluster_id(leader_id)
 
         print("Received the informMember message from leader {leader} with proposal {proposal} and MY profile {profile}".format(leader=leader_id, proposal=proposal_number, profile=profile))
-        print("The leader {leader} with proposal {proposal} is alive: its profile {profile1} - our profile {profile2}".format(leader=leader_id, proposal=proposal_number, profile1=leader_profile, profile2=profile))
+        print("The leader {leader} with proposal {proposal} is alive: ITS profile {profile1} - MY profile {profile2}".format(leader=leader_id, proposal=proposal_number, profile1=leader_profile, profile2=profile))
 
-        cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id}
+        cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id, "profile": profile}
 
         with open('/tmp/eval_da.txt', 'a') as fpi:
             fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-        # Check for significant profile changes /coming
-        leader_profile = get_profile_by_cluster_id(leader_id)
+        #Check for significant profile changes /coming
+        #leader_profile = get_profile_by_cluster_id(leader_id)
         #profile_theta = profile - candidate_profile # Check for significant profile changes /coming
         #if profile_theta > 0:
 
