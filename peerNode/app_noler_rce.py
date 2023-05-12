@@ -112,12 +112,13 @@ class Cluster:
 
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
+                    #payload["params"]["profile"] = None
+                    profilex = get_profile_by_cluster_id(member["cluster_id"])
+                    print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
+                    payload["params"]["profile"] = profilex
+                    print("Payload Election: {payload}".format(payload=payload))
                     
                     try:
-                        profilex = get_profile_by_cluster_id(member["cluster_id"])
-                        print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profilex))
-                        payload["params"]["profile"] = profilex
-                        print("Payload Election: {payload}".format(payload=payload))
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
@@ -358,13 +359,13 @@ class Cluster:
                 break
 
 
-    def voter(self, member_id, profile, proposal_number):
+    def voter(self, member_id, profilev, proposal_number):
 
         print('\n\nVoter Method')
 
         voter_id = cluster.member_id
 
-        print("Received vote request from {member} with proposal {proposal} and MY profile {profile}".format(member=member_id, proposal=proposal_number, profile=profile))
+        print("Received vote request from {member} with proposal {proposal} and MY profile {profilev}".format(member=member_id, proposal=proposal_number, profilev=profilev))
 
         response_ack = {
             "response": "responseVote",
