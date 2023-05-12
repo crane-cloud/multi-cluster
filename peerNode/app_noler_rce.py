@@ -116,12 +116,13 @@ class Cluster:
                     profilex = get_profile_by_cluster_id(member["cluster_id"])
                     #print("Profile for member {member}: {profilex}".format(member=member["cluster_id"], profilex=profilex))
 
-                    #payload_update = payload.copy()
-                    payload["params"]["profile"] = profilex
-                    print("Payload Election: {payload}".format(payload=payload))
+                    payload_update = copy.deepcopy(payload)
+                    
+                    payload_update["params"]["profile"] = profilex
+                    print("Payload Election: {payload_update}".format(payload=payload_update))
 
                     try:
-                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload.copy(), self.post_request_timeout))
+                        task = asyncio.create_task(make_post_request(member["cluster_id"], payload_update.copy(), self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
                         print(f"Timeout Error: {member['cluster_id']}")
