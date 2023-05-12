@@ -256,6 +256,8 @@ class Cluster:
                 fpx.write("Expired: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
             await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+        # We can wait here...
+        time.sleep(self.heartbeat_interval)
 
 
     async def start_heartbeat(self):
@@ -401,28 +403,30 @@ class Cluster:
                 
                 else:
                     print("My profile {profile1} is worse than profile {profile2} for {idx}".format(profile1=profilev, profile2=member_profile,idx=member_id))
-                    cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profilev}
+                    cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                     return response_ack
             except Exception as e:
                 print("Exception in voter method: {e}".format(e=e))
                 return None
 
-        # If the cluster has better leader information
+        # If the cluster has better voted information
         elif cluster.voted:
             if proposal_number > cluster.voted['proposal_number']:
                 try:
                     print("A better proposal {proposal} than voted {v} from {idx}\n\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx=member_id))
 
-                    if profilev >= cluster.voted['profile']:
-                        print("Voted MY profile {profile1} is < new member MY profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=profilev,idx=member_id))
+                    if (profilev > member_profile) and (member_profile >= cluster.voted['profile']):
+
+                        print("Vote: New Member Profile {profile1} is >= Voted Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx=member_id))
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        return response_ack
+                    else:
+                        print("Vote: New Member Profile {profile1} is < Voted Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx=member_id))
                         #print("Changing state to candidate.....")
                         #cluster.reset_leadership_vote_timer()
                         #cluster.state = 'candidate'
                         return response_nack
-                    else:
-                        print("Voted MY profile {profile1} is >= new member MY profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=profilev,idx=member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profilev}
-                        return response_ack
+
                 except Exception as e:
                     print("Exception in voter method: {e}".format(e=e))
                     return None
@@ -437,13 +441,19 @@ class Cluster:
             if proposal_number > cluster.leaderx['proposal_number']:
                 try:
 
-                    if profilev >= cluster.leaderx['profile']:
-                        print("Leader MY profile {profile1} is < new member MY profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=profilev,idx=member_id))
-                        return response_nack
-                    else:
-                        print("Leader MY profile {profile1} is >= new member MY profile {profile2} for {idx}".format(profile1=cluster.leaderx['profile'],profile2=profilev,idx=member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profilev}
+                    print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
+
+                    if (profilev > member_profile) and (member_profile >= cluster.leaderx['profile']):
+                        print("Leader: New Member Profile {profile1} is >= Leader Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx=member_id))
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                         return response_ack
+                    else:
+                        print("Leader: New Member Profile {profile1} is < Leader Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx=member_id))
+                        #print("Changing state to candidate.....")
+                        #cluster.reset_leadership_vote_timer()
+                        #cluster.state = 'candidate'                        
+                        return response_nack
+
                 except:
                     print("Exception in voter method: {e}".format(e=e))
                     return None
@@ -560,10 +570,11 @@ class Cluster:
     def ackVote(self, member_id, proposal_number, profile):
         #A voter or member receives the ackVote message as confirmation of winner (leader)
 
-        #leader_profile = get_profile_by_cluster_id(member_id)
+        leader_profile = get_profile_by_cluster_id(member_id)
+
 
         print("Cluster state at ackVote {ack}".format(ack=cluster.state))
-        cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id, "profile": profile}
+        cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id, "profile": leader_profile}
 
         with open('/tmp/eval_da.txt', 'a') as fp:
             fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
@@ -604,7 +615,7 @@ class Cluster:
         print("Received the informMember message from leader {leader} with proposal {proposal} and MY profile {profile}".format(leader=leader_id, proposal=proposal_number, profile=profile))
         print("The leader {leader} with proposal {proposal} is alive: ITS profile {profile1} - MY profile {profile2}".format(leader=leader_id, proposal=proposal_number, profile1=leader_profile, profile2=profile))
 
-        cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id, "profile": profile}
+        cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id, "profile": leader_profile}
 
         with open('/tmp/eval_da.txt', 'a') as fpi:
             fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
