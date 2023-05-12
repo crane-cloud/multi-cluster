@@ -117,7 +117,7 @@ class Cluster:
                         profilex = get_profile_by_cluster_id(member["cluster_id"])
                         print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profilex))
                         payload["params"]["profile"] = profilex
-                        print("Payload: {payload}".format(payload=payload))
+                        print("Payload Election: {payload}".format(payload=payload))
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
@@ -261,7 +261,8 @@ class Cluster:
             "params": {
                 "self": None,
                 "leader_id": self.member_id,
-                "proposal_number": self.proposal_number
+                "proposal_number": self.proposal_number,
+                "profile": None
                 },
             "jsonrpc": "2.0",
             "id": 2,
@@ -280,7 +281,10 @@ class Cluster:
                         # Only send request to other members
                         if member["cluster_id"] != self.member_id:
                             try:
-                                payload_inf["params"]["profile"] = get_profile_by_cluster_id(member["cluster_id"])
+                                profilei = get_profile_by_cluster_id(member["cluster_id"])
+                                print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profilei))
+                                payload_inf["params"]["profile"] = profilei
+                                print("Payload at informMember: {payload}".format(payload=payload_inf))
                                 task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, self.post_request_timeout))
                                 tasks.append(task)
                             except asyncio.TimeoutError:
