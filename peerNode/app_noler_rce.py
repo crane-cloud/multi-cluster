@@ -524,8 +524,12 @@ class Cluster:
                 print("We have a leader, so we will not start an election cycle")
 
         # As a candidate, keep polling the leader to ensure liveliness
-        self.start_pollleader()
+        try:
+            self.pollleader_timer = None
+            tl = await self.start_pollleader()
 
+        except Exception as e:
+            print(f"Error: {e}")
 
 
     #-----------------------------#
