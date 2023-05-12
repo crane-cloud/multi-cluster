@@ -112,8 +112,10 @@ class Cluster:
 
                 # Only request for votes from other members
                 if member["cluster_id"] != self.member_id:
+                    profile = get_profile_by_cluster_id(member["cluster_id"])
                     try:
-                        payload["params"]["profile"] = get_profile_by_cluster_id(member["cluster_id"])
+                        print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=profile))
+                        payload["params"]["profile"] = profile
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload, self.post_request_timeout))
                         tasks.append(task)
                     except asyncio.TimeoutError:
@@ -146,7 +148,8 @@ class Cluster:
             "params": {
                 "self": None,
                 "member_id": self.member_id,
-                "proposal_number": self.proposal_number
+                "proposal_number": self.proposal_number,
+                "profile": None
                 },
             "jsonrpc": "2.0",
             "id": 1,
@@ -556,10 +559,10 @@ class Cluster:
 
         #Not a very useful response as it is not required - we could write another post for these kind of messages
 
-        # Only change the state of the member not leader
+        # Only change the state of the member not leader or candidate
 
-        if cluster.member_id != member_id:
-            cluster.state = "member"
+        #if cluster.member_id != member_id or cluster.state != "candidate":
+        #    cluster.state = "member"
 
         return Success(response)
 
@@ -570,7 +573,7 @@ class Cluster:
 
 
     @method
-    async def informMember(self, leader_id, profile, proposal_number):
+    def informMember(self, leader_id, profile, proposal_number):
         #If a member receives this message (should be from the leader), the leaderShipTermTimer is reset
 
         print("Received the informMember message from leader {leader} with proposal {proposal} and MY profile {profile}".format(leader=leader_id, proposal=proposal_number, profile=profile))
@@ -588,7 +591,7 @@ class Cluster:
 
         if profile > leader_profile:
             cluster.proposal_number = cluster.leaderx["proposal_number"]
-            await asyncio.wait_for(cluster.start_election_cycle(cluster.proposal_number), timeout=cluster.election_timeout)
+            #await asyncio.wait_for(cluster.start_election_cycle(cluster.proposal_number), timeout=cluster.election_timeout)
 
         else:
             cluster.reset_leadership_timer()
