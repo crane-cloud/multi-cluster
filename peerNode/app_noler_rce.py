@@ -275,7 +275,7 @@ class Cluster:
                         # Only send request to other members
                         if member["cluster_id"] != self.member_id:
                             try:
-                                payload_inf["params"]["profile"] = member["profile"]
+                                payload_inf["params"]["profile"] = get_profile_by_cluster_id(member["cluster_id"])
                                 task = asyncio.create_task(make_post_request(member["cluster_id"], payload_inf, self.post_request_timeout))
                                 tasks.append(task)
                             except asyncio.TimeoutError:
