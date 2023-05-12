@@ -403,7 +403,8 @@ class Cluster:
                     print("My profile {profile1} is worse than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
                     cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                     return response_ack
-            except:
+            except Exception as e:
+                print("Exception in voter method: {e}".format(e=e))
                 return None
 
         # If the cluster has better leader information
@@ -422,7 +423,8 @@ class Cluster:
                         print("Voted MY profile {profile1} is >= new member MY profile {profile2} for {idx}".format(profile1=cluster.voted['profile'],profile2=profile,idx=member_id))
                         cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                         return response_ack
-                except:
+                except Exception as e:
+                    print("Exception in voter method: {e}".format(e=e))
                     return None
             else:
                 return response_nack
@@ -443,6 +445,7 @@ class Cluster:
                         cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": profile}
                         return response_ack
                 except:
+                    print("Exception in voter method: {e}".format(e=e))
                     return None
             else:
                 return response_nack
