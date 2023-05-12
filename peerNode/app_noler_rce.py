@@ -392,7 +392,7 @@ class Cluster:
                 print("Seems we have not voted before\n\n")
 
                 if profilev > member_profile:
-                    print("My profile {profile1} is better than profile {profile2} for {idx}".format(profile1=profilev, profile2=member_profile,idx=member_id))
+                    print("My profile {profile1} > Member profile {idx}:{profile2}".format(profile1=profilev, profile2=member_profile,idx=member_id))
 
                     if (cluster.state != 'candidate') or (cluster.state != 'leader'):
                         print("Changing state to candidate.....")
@@ -402,7 +402,7 @@ class Cluster:
                         return response_nack
                 
                 else:
-                    print("My profile {profile1} is worse than profile {profile2} for {idx}".format(profile1=profilev, profile2=member_profile,idx=member_id))
+                    print("My profile {profile1} <= profile {idx}:{profile2}".format(profile1=profilev, profile2=member_profile,idx=member_id))
                     cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                     return response_ack
             except Exception as e:
@@ -413,15 +413,15 @@ class Cluster:
         elif cluster.voted:
             if proposal_number > cluster.voted['proposal_number']:
                 try:
-                    print("A better proposal {proposal} than voted {v} from {idx}\n\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx=member_id))
+                    print("A better proposal number {proposal} than voted {v} from {idx}\n\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx=member_id))
 
                     if (profilev > member_profile) and (member_profile >= cluster.voted['profile']):
 
-                        print("Vote: New Member Profile {profile1} is >= Voted Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx=member_id))
+                        print("Vote: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                         cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                         return response_ack
                     else:
-                        print("Vote: New Member Profile {profile1} is < Voted Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx=member_id))
+                        print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                         #print("Changing state to candidate.....")
                         #cluster.reset_leadership_vote_timer()
                         #cluster.state = 'candidate'
@@ -444,11 +444,11 @@ class Cluster:
                     print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
 
                     if (profilev > member_profile) and (member_profile >= cluster.leaderx['profile']):
-                        print("Leader: New Member Profile {profile1} is >= Leader Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx=member_id))
+                        print("Leader: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                         cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                         return response_ack
                     else:
-                        print("Leader: New Member Profile {profile1} is < Leader Profile {profile2} for {idx}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx=member_id))
+                        print("Leader: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                         #print("Changing state to candidate.....")
                         #cluster.reset_leadership_vote_timer()
                         #cluster.state = 'candidate'                        
