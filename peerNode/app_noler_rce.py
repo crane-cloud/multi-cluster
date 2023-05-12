@@ -28,7 +28,8 @@ app = Flask(__name__)
 
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
-port = int(os.getenv("LE_PORT", 5002))
+#port = int(os.getenv("LE_PORT", 5002))
+port = 5002
 
 cached_data_queue = deque(maxlen=10)
 
@@ -639,11 +640,11 @@ async def make_post_request(peer_id, payload, timeout):
             latency = time.monotonic() - start_time
             print(f"Request to {url} timeout error in {latency:.4f} seconds")
             return None
-        except aiohttp.ClientError:
-            print(f"Client error for server {url}")
+        except aiohttp.ClientError as ceerror:
+            print(f"Client error for server {url}: {ceerror}")
             return None
-        except aiohttp.client_exceptions.ClientConnectorError:
-            print(f"Connection error for server {url}")
+        except aiohttp.client_exceptions.ClientConnectorError as ccerror:
+            print(f"Connection error for server {url}: {ccerror}")
             return None
         except Exception as e:
             print(f"Error: {e}")
