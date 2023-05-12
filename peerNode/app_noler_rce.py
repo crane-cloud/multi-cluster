@@ -392,12 +392,12 @@ class Cluster:
                 if profile > member_profile:
                     print("My profile {profile1} is better than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
 
-                    if cluster.state != 'candidate' or cluster.state != 'leader':
+                    if (cluster.state != 'candidate') or (cluster.state != 'leader'):
                         print("Changing state to candidate.....")
                         # start the leadership_vote_timer
                         cluster.reset_leadership_vote_timer()
                         cluster.state = 'candidate'
-                    return response_nack
+                        return response_nack
                 
                 else:
                     print("My profile {profile1} is worse than profile {profile2} for {idx}".format(profile1=profile, profile2=member_profile,idx=member_id))
