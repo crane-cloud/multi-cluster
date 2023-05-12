@@ -614,7 +614,7 @@ class Cluster:
 
 async def make_post_request(peer_id, payload, timeout):
     # Send the message to the specified peer
-    url = "http://"+peer_id
+    url = "http://"+peer_id.replace(":5001", ":5002")
     headers = {'content-type': 'application/json'}
 
     print(f"Request to {url} made at {time.monotonic()}")
