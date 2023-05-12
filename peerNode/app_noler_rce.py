@@ -120,7 +120,7 @@ class Cluster:
                     payload_update = copy.deepcopy(payload)
 
                     payload_update["params"]["profile"] = profilex
-                    print("Payload Election: {payload_update}".format(payload=payload_update))
+                    print("Payload Election: {payload_update}".format(payload_update=payload_update))
 
                     try:
                         task = asyncio.create_task(make_post_request(member["cluster_id"], payload_update.copy(), self.post_request_timeout))
