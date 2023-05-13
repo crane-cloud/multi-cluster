@@ -411,36 +411,65 @@ class Cluster:
 
         # If the cluster has better voted information
         elif cluster.voted:
-            if proposal_number > cluster.voted['proposal_number']:
+            if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
+                
                 try:
-                    print("A better proposal number {proposal} than voted {v} from {idx}\n\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx=member_id))
+                    if (member_profile >= profilev):
 
-                    if (member_profile >= profilev) and (member_profile >= cluster.voted['profile']):
+                        if (member_profile >= cluster.voted['profile']):
+                            print("Vote: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                            return response_ack
 
-                        #possible same member vote request retrial
+                        elif (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()):
+                            print("Vote: (LeDead) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                            return response_ack
 
-                        print("Vote: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                        return response_ack
-
-                    # Possible the leader is dead
-                    elif member_profile >= profilev and cluster.leadership_timer is not None and not cluster.leadership_timer.is_alive():
-                        print("Vote: (LD) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-
-                        return response_ack
-
-                    # Need to do this better
-                    elif member_profile >= profilev:
-                        print("Vote: New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-
-                        return response_ack
-
+                        else:
+                            print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+                            print("Changing state to candidate.....")
+                            #cluster.reset_leadership_vote_timer()
+                            #cluster.state = 'candidate'
+                            return response_nack
 
                     else:
-                        print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
-                        #print("Changing state to candidate.....")
+                        print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                        return response_nack
+
+                except Exception as e:
+                    print("Exception in voter method: {e}".format(e=e))
+                    return None
+
+        # If the cluster has leader information, confirm this is a fresh election & profiles are good
+        elif cluster.leaderx:
+            #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
+
+            if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.leaderx['proposal_number']):
+
+                try:
+                    if (member_profile >= profilev):
+
+                        if (member_profile >= cluster.leaderx['profile']):
+                            print("Vote: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
+                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                            return response_ack
+
+                        elif (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()):
+                            print("Vote: (LeDead) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                            return response_ack
+
+                        else:
+                            print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
+                            print("Changing state to candidate.....")
+                            #cluster.reset_leadership_vote_timer()
+                            #cluster.state = 'candidate'
+                            return response_nack
+
+                    else:
+                        print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                        print("Changing state to candidate.....")
                         #cluster.reset_leadership_vote_timer()
                         #cluster.state = 'candidate'
                         return response_nack
@@ -449,53 +478,12 @@ class Cluster:
                     print("Exception in voter method: {e}".format(e=e))
                     return None
             else:
-                print("proposal number received {idx1}:{proposal} <= voted {idx2}:{v}\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx1=member_id, idx2 = cluster.voted['voted']))
-                return response_nack
-
-
-        # If the cluster has leader information, confirm this is a fresh election & profiles are good
-        elif cluster.leaderx:
-            #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
-
-            if proposal_number > cluster.leaderx['proposal_number']:
-                try:
-
-                    print("Received leader {leader} info before with {proposal} and your proposal {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
-
-                    if (member_profile >= profilev) and (member_profile >= cluster.leaderx['profile']):
-                        print("Leader: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                        return response_ack
-
-                    # Possible the leader is somehow dead
-                    elif member_profile >= profilev and cluster.leadership_timer is not None and not cluster.leadership_timer.is_alive():
-                        print("Leader: (LD) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                        return response_ack
-
-                    elif member_profile >= profilev:
-                        print("Leader: (NE) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                        return response_ack
-
-                    else:
-                        print("Leader: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                        #print("Changing state to candidate.....")
-                        #cluster.reset_leadership_vote_timer()
-                        #cluster.state = 'candidate'                        
-                        return response_nack
-
-                except:
-                    print("Exception in voter method: {e}".format(e=e))
-                    return None
-            else:
-                print("proposal number received {idx1}:{proposal} <= voted {idx2}:{v}\n".format(proposal=proposal_number, v=cluster.voted['proposal_number'], idx1=member_id, idx2 = cluster.voted['voted']))
+                print("Stale election, ignoring vote request")
                 return response_nack
 
         else:
-            print("None of the above")
+            print("None of the above, noVote")
             return response_nack
-
 
 
     async def leader(self):
