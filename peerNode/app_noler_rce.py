@@ -385,6 +385,8 @@ class Cluster:
 
         member_profile = get_profile_by_cluster_id(member_id)
 
+        print("Vote request: Member profile {idx1}:{profile1} & My profile {idx2}:{profile2}".format(profile1=member_profile, profile2=profilev,idx1=member_id,idx2=cluster.member_id))
+
         # If never voted or received a leader result
         print("Vote proposal numbers, request: {req} and mine: {ours}".format(req=proposal_number, ours=cluster.proposal_number))
         if (proposal_number > cluster.proposal_number) and (not(cluster.voted)  and not(cluster.leaderx)):
@@ -405,16 +407,20 @@ class Cluster:
                     print("My profile {idx1}:{profile1} <= profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
                     cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                     return response_ack
+
             except Exception as e:
                 print("Exception in voter method: {e}".format(e=e))
                 return None
 
         # If the cluster has better voted information
         elif cluster.voted:
+            print("We have voted before\n\n")
             if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
                 
                 try:
                     if (member_profile >= profilev):
+
+                        print("Our profile is bad - in voted")
 
                         if (member_profile >= cluster.voted['profile']):
                             print("Vote: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
@@ -444,11 +450,14 @@ class Cluster:
         # If the cluster has leader information, confirm this is a fresh election & profiles are good
         elif cluster.leaderx:
             #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
+            print("We have received leader info\n\n")
 
             if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.leaderx['proposal_number']):
 
                 try:
                     if (member_profile >= profilev):
+
+                        print("Our profile is bad - in leaderx")
 
                         if (member_profile >= cluster.leaderx['profile']):
                             print("Vote: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
@@ -482,7 +491,7 @@ class Cluster:
                 return response_nack
 
         else:
-            print("None of the above, noVote")
+            print("None of the above - I am potential leader")
             return response_nack
 
 
@@ -585,6 +594,7 @@ class Cluster:
             print(result)
             return Success(result)
         else:
+            print("Voter method returned None")
             return None
 
     @method
