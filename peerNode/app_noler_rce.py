@@ -415,9 +415,10 @@ class Cluster:
         # If the cluster has better voted information
         elif cluster.voted:
             print("We have voted before\n\n")
-            if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
-                
-                try:
+
+            try:
+                if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
+    
                     if (member_profile >= profilev):
 
                         print("Our profile is bad - in voted")
@@ -434,7 +435,7 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
-                            print("Changing state to candidate.....")
+                            print("Changing state to candidate.....") # only if we are not a candidate or leader
                             #cluster.reset_leadership_vote_timer()
                             #cluster.state = 'candidate'
                             return response_nack
@@ -442,19 +443,23 @@ class Cluster:
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
                         return response_nack
+                else:
+                    print("Stale election - in voted\n\n")
+                    return response_nack
 
-                except Exception as e:
-                    print("Exception in voter method: {e}".format(e=e))
-                    return None
+            except Exception as e:
+                print("Exception in voter.voted method: {e}".format(e=e))
+                return None
 
         # If the cluster has leader information, confirm this is a fresh election & profiles are good
         elif cluster.leaderx:
             #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
             print("We have received leader info\n\n")
 
-            if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.leaderx['proposal_number']):
+            try:
 
-                try:
+                if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.leaderx['proposal_number']):
+
                     if (member_profile >= profilev):
 
                         print("Our profile is bad - in leaderx")
@@ -471,25 +476,24 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                            print("Changing state to candidate.....")
+                            print("Changing state to candidate.....") # only if not leader
                             #cluster.reset_leadership_vote_timer()
                             #cluster.state = 'candidate'
                             return response_nack
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        print("Changing state to candidate.....")
+                        print("Changing state to candidate.....") # only if not leader
                         #cluster.reset_leadership_vote_timer()
                         #cluster.state = 'candidate'
                         return response_nack
+                else:
+                    print("Stale election - in leaderx\n\n")
+                    return response_nack
 
-                except Exception as e:
+            except Exception as e:
                     print("Exception in voter method: {e}".format(e=e))
                     return None
-            else:
-                print("Stale election, ignoring vote request")
-                return response_nack
-
         else:
             print("None of the above - I am potential leader")
             return response_nack
