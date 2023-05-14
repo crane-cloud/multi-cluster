@@ -138,8 +138,10 @@ class Cluster:
 
 
     async def start_election_cycle(self):
-
+        
+        print("Proposal 00: {proposal}".format(proposal=self.proposal_number))
         self.proposal_number += 1
+        print("Proposal 01: {proposal}".format(proposal=self.proposal_number))
         self.votes = {self.proposal_number: []}
         leader_size = len(self.members) // 2  #node votes itself by default, hence +1
 
@@ -222,19 +224,19 @@ class Cluster:
         #time.sleep(round(random.uniform(0.0001, 0.0004), 6)) # seconds latency range
         #time.sleep(random.randint(30, 100) / 10.0)
 
-        if self.leaderx:
-            print("I have self leaderx: {rx}".format(rx=self.leaderx["leader"]))
+        #if self.leaderx:
+        #    print("I have self leaderx: {rx}".format(rx=self.leaderx["leader"]))
 
-        if cluster.leaderx:
-            print("I have cluster leaderx: {rx}".format(rx=cluster.leaderx["leader"]))
+        #if cluster.leaderx:
+        #    print("I have cluster leaderx: {rx}".format(rx=cluster.leaderx["leader"]))
 
         if self.leaderx or cluster.leaderx:
 
             print("I have a leader with ID {idx} at propsal {proposal}".format(idx = self.leaderx["leader"], proposal = self.leaderx["proposal_number"]))
 
             # Update the member proposal number to the latest for future elections
-            self.proposal_number = self.leaderx["proposal_number"]
-            print("Updated proposal from leader entry: {proposal}".format(proposal=self.leaderx["proposal_number"]))
+            # self.proposal_number = self.leaderx["proposal_number"]
+            # print("Updated proposal from leader entry: {proposal}".format(proposal=self.leaderx["proposal_number"]))
 
         else:
             with open('/tmp/eval_da.txt', 'a') as fpm:
@@ -655,6 +657,9 @@ class Cluster:
         print("The leader {leader} with proposal {proposal} is alive: ITS profile {profile1} - MY profile {profile2}".format(leader=leader_id, proposal=proposal_number, profile1=leader_profile, profile2=profile))
 
         cluster.leaderx = {"proposal_number": proposal_number, "leader": leader_id, "profile": leader_profile}
+
+        #Update the proposal number for future elections
+        cluster.proposal_number = proposal_number
 
         with open('/tmp/eval_da.txt', 'a') as fpi:
             fpi.write("informMember: {leader} with proposal {proposal} at {ts}\n".format(leader=leader_id, proposal=proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
