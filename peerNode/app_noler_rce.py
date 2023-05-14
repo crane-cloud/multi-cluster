@@ -137,9 +137,9 @@ class Cluster:
         return responses
 
 
-    async def start_election_cycle(self, proposal_number):
+    async def start_election_cycle(self):
 
-        self.proposal_number = proposal_number + 1
+        self.proposal_number += 1
         self.votes = {self.proposal_number: []}
         leader_size = len(self.members) // 2  #node votes itself by default, hence +1
 
@@ -245,7 +245,7 @@ class Cluster:
         if self.leadership_timer is None:
             # We start a new election cycle
             print("No leaderx, so we start a new election cycle")
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout) # within the largest latency range
+            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout) # within the largest latency range
 
         elif self.leadership_timer and self.leadership_timer.is_alive():
             print("Leadership timer set to expire in", self.leadership_timer.interval, "seconds")
@@ -255,7 +255,7 @@ class Cluster:
             with open('/tmp/eval_da.txt', 'a') as fpx:
                 fpx.write("Expired: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
         # We can wait here...
         time.sleep(self.heartbeat_interval)
 
@@ -343,7 +343,7 @@ class Cluster:
                             fppd.write("Dead: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
                         self.proposal_number = self.leaderx["proposal_number"]
-                        await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
                         
 
                     response = await asyncio.gather(*tasks)
@@ -355,7 +355,7 @@ class Cluster:
                                 fppc.write("lowProfile: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
                             self.proposal_number = self.leaderx["proposal_number"]
-                            await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+                            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                 # We sleep for the poll leader interval & then send another poll
                 time.sleep(self.pollleader_interval)
@@ -416,6 +416,8 @@ class Cluster:
         elif cluster.voted:
             print("We have voted before\n\n")
 
+            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Voted {voted})".format(member=proposal_number, cluster=cluster.proposal_number, voted=cluster.voted['proposal_number']))
+
             try:
                 if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
     
@@ -455,6 +457,8 @@ class Cluster:
         elif cluster.leaderx:
             #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
             print("We have received leader info\n\n")
+
+            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Leader {leader})".format(member=proposal_number, cluster=cluster.proposal_number, leader=cluster.leaderx['proposal_number']))
 
             try:
 
@@ -569,7 +573,7 @@ class Cluster:
                 fpcx.write("Expired CE: New candidate {candidate} with proposal {proposal} at {ts}\n".format(candidate=self.member_id, proposal = self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
             
             if (not self.leaderx) or (not cluster.leaderx):
-                await asyncio.wait_for(self.start_election_cycle(self.proposal_number), timeout=self.election_timeout)
+                await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
             else:
                 self.reset_leadership_vote_timer()
                 print("We have a leader, so we will not start an election cycle")
@@ -660,12 +664,15 @@ class Cluster:
         #profile_theta = profile - candidate_profile # Check for significant profile changes /coming
         #if profile_theta > 0:
 
-        if profile > leader_profile:
-            cluster.proposal_number = cluster.leaderx["proposal_number"]
-            #await asyncio.wait_for(cluster.start_election_cycle(cluster.proposal_number), timeout=cluster.election_timeout)
+        #if profile > leader_profile:
+        #    cluster.proposal_number = cluster.leaderx["proposal_number"]
+        #    #await asyncio.wait_for(cluster.start_election_cycle(), timeout=cluster.election_timeout)
 
-        else:
-            cluster.reset_leadership_timer()
+        #else:
+        cluster.reset_leadership_timer()
+
+        #if cluster.state != "candidate" or cluster.state != "leader":
+        cluster.state = "member"
 
         return Success(None)
 
