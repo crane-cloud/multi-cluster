@@ -199,16 +199,23 @@ class Cluster:
 
             print("Number of votes received: {votes}".format(votes=len(self.votes[self.proposal_number])))
 
-            if len(self.votes[self.proposal_number]) >= leader_size:
-            #We can now execute the leader role functions - send ackVote
 
-                with open('/tmp/eval_da.txt', 'a') as fpx:
-                    fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+            try:
 
-                self.state = 'leader'
-            else:
-                return None
+                if len(self.votes[self.proposal_number]) >= leader_size:
+                #We can now execute the leader role functions - send ackVote
+
+                    with open('/tmp/eval_da.txt', 'a') as fpx:
+                        fpx.write("Leader: {leader} with proposal {proposal} at {ts}\n".format(leader=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+
+                    self.state = 'leader'
+                else:
+                    return None
                 #print("We restart the election cycle as member at next proposal {proposal} \n\n\n".format(proposal=(self.proposal_number + 1)))
+                    self.state = 'member'
+            except Exception as e:
+                print(f"Exception in vote count: {e}")
+                return None
                 self.state = 'member'
         else:
             return None
