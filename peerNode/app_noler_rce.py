@@ -660,8 +660,9 @@ class Cluster:
 
         # Only change the state of the member not leader or candidate
 
-        #if cluster.member_id != member_id or cluster.state != "candidate":
-        #    cluster.state = "member"
+        if (member_id != cluster.member_id) and (cluster.state != "candidate") and (cluster.state != "leader"):
+            cluster.reset_leadership_timer()
+            cluster.state = "member"
 
         return Success(response)
 
@@ -698,10 +699,13 @@ class Cluster:
         #    #await asyncio.wait_for(cluster.start_election_cycle(), timeout=cluster.election_timeout)
 
         #else:
-        cluster.reset_leadership_timer()
 
         #if cluster.state != "candidate" or cluster.state != "leader":
-        cluster.state = "member"
+        #cluster.state = "member"
+
+        if (cluster.leader_id != cluster.member_id) and (cluster.state != "candidate") and (cluster.state != "leader"):
+            cluster.reset_leadership_timer()
+            cluster.state = "member"
 
         return Success(None)
 
