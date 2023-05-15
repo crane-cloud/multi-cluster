@@ -347,15 +347,14 @@ class Cluster:
                         payload_pl["params"]["profile"] = leader_p
                         task = asyncio.create_task(make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)) # ?Shorter timeout - leader should respond fast
                         tasks.append(task)
-                    except asyncio.TimeoutError:
-                        print(f"Timeout Error for leader: {self.leaderx['leader']}, dead?")
+                    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                        print(f"Timeout|Connect Error for leader: {self.leaderx['leader']}, dead?")
                         
                         with open('/tmp/eval_da.txt', 'a') as fppd:
                             fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
                         self.proposal_number = self.leaderx["proposal_number"]
-                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
-                        
+                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)                        
 
                     responses = await asyncio.gather(*tasks)
 
@@ -589,8 +588,9 @@ class Cluster:
         #We set the LeadershipVoteTimer [We expect a leader within this time]
         #If this expires, and there is no ackVote message - we begin an election phase
 
-        time.sleep(self.leadership_vote_timeout)
+        ###time.sleep(self.leadership_vote_timeout)
 
+        # To allow the initial LE, if not start out immediately
         if self.leadership_vote_timer and self.leadership_vote_timer.is_alive():
             print("Leadership vote timer set to expire in", self.leadership_vote_timer.interval, "seconds")
 
@@ -600,17 +600,21 @@ class Cluster:
                 fpcx.write("Expired CE: New candidate {candidate} with proposal {proposal} at {ts}\n".format(candidate=self.member_id, proposal = self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
             
             if (not self.leaderx) or (not cluster.leaderx):
-                await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
+                await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout) # fast path
             else:
+                print("We have a leader, so we just poll it")
                 self.reset_leadership_vote_timer()
-                print("We have a leader, so we will not start an election cycle")
+                self.pollleader_timer = None
+                tl = await self.start_pollleader()
 
-        # As a candidate, keep polling the leader to ensure liveliness
-        if (self.leaderx or cluster.leaderx):
-            print("We have a leader, we should now poll it")
-            self.pollleader_timer = None
+        time.sleep(self.leadership_vote_timeout)
 
-            tl = await self.start_pollleader()
+        ## As a candidate, keep polling the leader to ensure liveliness
+        #if (self.leaderx or cluster.leaderx):
+        #    print("We have a leader, we should now poll it")
+        #    self.pollleader_timer = None
+
+        #    tl = await self.start_pollleader()
 
 
     # Compute the backoff time for the next election cycle
