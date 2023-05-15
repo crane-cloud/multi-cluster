@@ -360,7 +360,7 @@ class Cluster:
                     response = await asyncio.gather(*tasks)
 
                     if response is not None:
-                        if response["params"][1] > leader_p:
+                        if response["result"]["params"][1] >= leader_p:
                             print("Leader profile is worse, start election cycle")
                             with open('/tmp/eval_da.txt', 'a') as fppc:
                                 fppc.write("lowProfile: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
@@ -728,15 +728,15 @@ class Cluster:
 
         print("Received the pollLeader message from Candidate {candidate} with proposal {proposal} and MY profile {profile}".format(candidate=candidate_id, proposal=proposal_number, profile=profile))
 
-        if proposal_number == cluster.proposal_number:
-            candidate_profile = get_profile_by_cluster_id(candidate_id)
+        ##if proposal_number == cluster.proposal_number:
+        candidate_profile = get_profile_by_cluster_id(candidate_id)
 
             #profile_theta = profile - candidate_profile # Check for significant profile changes /coming
 
-            return Success({"response": "polledLeader", "params": [cluster.member_id, candidate_profile]})
-        else:   
+        return Success({"response": "polledLeader", "params": [cluster.member_id, candidate_profile]})
+        ##else:   
             
-            return Success(None)
+        ##    return Success(None)
 
 
 async def make_post_request(peer_id, payload, timeout):
