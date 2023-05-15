@@ -351,7 +351,7 @@ class Cluster:
                         print(f"Timeout Error for leader: {self.leaderx['leader']}, dead?")
                         
                         with open('/tmp/eval_da.txt', 'a') as fppd:
-                            fppd.write("Dead: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+                            fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
                         self.proposal_number = self.leaderx["proposal_number"]
                         await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
@@ -407,11 +407,13 @@ class Cluster:
                 if profilev > member_profile:
                     print("My profile {idx1}:{profile1} > Member profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
 
-                    #if (cluster.state != 'candidate') or (cluster.state != 'leader'):
-                    #    print("Changing state to candidate.....")
-                    #    # start the leadership_vote_timer
-                    #    cluster.reset_leadership_vote_timer()
-                    #    cluster.state = 'candidate'
+                    if (cluster.state != 'candidate') or (cluster.state != 'leader'):
+
+                        print("Changing state to candidate...")
+                        #start the leadership_vote_timer
+                        cluster.reset_leadership_vote_timer()
+                        cluster.state = 'candidate'
+
                     return response_nack
                 
                 else:
@@ -448,13 +450,20 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+
                             print("Changing state to candidate.....") # only if we are not a candidate or leader
-                            #cluster.reset_leadership_vote_timer()
-                            #cluster.state = 'candidate'
+                            cluster.reset_leadership_vote_timer()
+                            cluster.state = 'candidate'
+
                             return response_nack
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+
+                        print("Changing state to candidate.....") # only if we are not a candidate or leader
+                        cluster.reset_leadership_vote_timer()
+                        cluster.state = 'candidate'
+
                         return response_nack
                 else:
                     print("Stale election - in voted\n\n")
@@ -491,16 +500,20 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
+ 
                             print("Changing state to candidate.....") # only if not leader
-                            #cluster.reset_leadership_vote_timer()
-                            #cluster.state = 'candidate'
+                            cluster.reset_leadership_vote_timer()
+                            cluster.state = 'candidate'
+
                             return response_nack
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+ 
                         print("Changing state to candidate.....") # only if not leader
-                        #cluster.reset_leadership_vote_timer()
-                        #cluster.state = 'candidate'
+                        cluster.reset_leadership_vote_timer()
+                        cluster.state = 'candidate'
+                        
                         return response_nack
                 else:
                     print("Stale election - in leaderx\n\n")
@@ -567,7 +580,7 @@ class Cluster:
 
 
     async def candidate(self):
-        print('We are in the candidate role')
+        print('Candidate Role')
         #We arrive here as a result of one of the profiles better than some proposal profile
 
         #We set the LeadershipVoteTimer [We expect a leader within this time]
@@ -590,16 +603,16 @@ class Cluster:
                 print("We have a leader, so we will not start an election cycle")
 
         # As a candidate, keep polling the leader to ensure liveliness
-        try:
+        if (self.leaderx or cluster.leaderx):
+            print("We have a leader, we should now poll it")
             self.pollleader_timer = None
+
             tl = await self.start_pollleader()
 
-        except Exception as e:
-            print(f"Error: {e}")
 
-
+    # Compute the backoff time for the next election cycle
     def compute_backoff(self):
-        # Compute the backoff time for the next election cycle
+        
         profile_o = 0
 
         for member in self.members:
