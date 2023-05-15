@@ -241,7 +241,9 @@ class Cluster:
         else:
             with open('/tmp/eval_da.txt', 'a') as fpm:
                 fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
-                time.sleep(self.compute_backoff() / 1000.0) # Only sleep if no leader at the start of the protocol
+                time.sleep(random.randint(30, 100) / 10.0)
+                #time.sleep(self.compute_backoff() / 1000.0) # Only sleep if no leader at the start of the protocol
+                self.compute_backoff()
 
         # Check if first instance/run
         if self.leadership_timer is None:
@@ -591,16 +593,17 @@ class Cluster:
 
     def compute_backoff(self):
         # Compute the backoff time for the next election cycle
-        profile_o = 0
+        #profile_o = 0
 
         for member in self.members:
-            profile_o += get_profile_by_cluster_id(member["cluster_id"])
+            #profile_o += get_profile_by_cluster_id(member["cluster_id"])
+            print("Profile for member {member}: {profile}".format(member=member["cluster_id"], profile=get_profile_by_cluster_id(member["cluster_id"])))
 
-        profile_o = (profile_o / (len(self.members) - 1)) * 300
+        #profile_o = (profile_o / (len(self.members) - 1)) * 300
 
-        print(profile_o)
+        #print(profile_o)
 
-        return profile_o
+        #return profile_o
 
 
     #-----------------------------#
