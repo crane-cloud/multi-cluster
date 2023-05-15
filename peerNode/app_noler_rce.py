@@ -409,7 +409,7 @@ class Cluster:
                 if profilev > member_profile:
                     print("My profile {idx1}:{profile1} > Member profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
 
-                    if (cluster.state != 'candidate') or (cluster.state != 'leader'):
+                    if cluster.state == 'member':
 
                         print("Changing state to candidate...")
                         #start the leadership_vote_timer
@@ -453,7 +453,7 @@ class Cluster:
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
 
-                            if not (cluster.state == 'candidate' or cluster.state == 'leader'):
+                            if cluster.state == 'member':
                                 print("Changing state to candidate.....") # only if we are not a candidate or leader
                                 cluster.reset_leadership_vote_timer()
                                 cluster.state = 'candidate'
@@ -462,7 +462,7 @@ class Cluster:
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        if not (cluster.state == 'candidate' or cluster.state == 'leader'):
+                        if cluster.state == 'member':
                             print("Changing state to candidate.....") # only if we are not a candidate or leader
                             cluster.reset_leadership_vote_timer()
                             cluster.state = 'candidate'
@@ -503,7 +503,7 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                            if not (cluster.state == 'candidate' or cluster.state == 'leader'):
+                            if cluster.state == "member":
                                 print("Changing state to candidate.....") # only if not leader
                                 cluster.reset_leadership_vote_timer()
                                 cluster.state = 'candidate'
@@ -513,7 +513,7 @@ class Cluster:
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
  
-                        if not (cluster.state == 'candidate' or cluster.state == 'leader'):
+                        if cluster.state == "member":
                             print("Changing state to candidate.....") # only if not leader
                             cluster.reset_leadership_vote_timer()
                             cluster.state = 'candidate'
