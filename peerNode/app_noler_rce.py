@@ -329,7 +329,7 @@ class Cluster:
                 "candidate_id": self.member_id,
                 },
             "jsonrpc": "2.0",
-            "id": 2,
+            "id": 3,
             }
 
         while True:
@@ -431,7 +431,7 @@ class Cluster:
         elif cluster.voted:
             print("We have voted before\n\n")
 
-            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Voted {voted})".format(member=proposal_number, cluster=cluster.proposal_number, voted=cluster.voted['proposal_number']))
+            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Voted {voted}".format(member=proposal_number, cluster=cluster.proposal_number, voted=cluster.voted['proposal_number']))
 
             try:
                 if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
@@ -453,7 +453,7 @@ class Cluster:
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
 
-                            if (cluster.state != 'candidate') or (cluster.state != 'leader'):
+                            if not (cluster.state == 'candidate' or cluster.state == 'leader'):
                                 print("Changing state to candidate.....") # only if we are not a candidate or leader
                                 cluster.reset_leadership_vote_timer()
                                 cluster.state = 'candidate'
@@ -462,7 +462,7 @@ class Cluster:
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        if cluster.state != 'candidate' or cluster.state != 'leader':
+                        if not (cluster.state == 'candidate' or cluster.state == 'leader'):
                             print("Changing state to candidate.....") # only if we are not a candidate or leader
                             cluster.reset_leadership_vote_timer()
                             cluster.state = 'candidate'
@@ -503,7 +503,7 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                            if cluster.state != 'candidate' or cluster.state != 'leader':
+                            if not (cluster.state == 'candidate' or cluster.state == 'leader'):
                                 print("Changing state to candidate.....") # only if not leader
                                 cluster.reset_leadership_vote_timer()
                                 cluster.state = 'candidate'
@@ -513,7 +513,7 @@ class Cluster:
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
  
-                        if cluster.state != 'candidate' or cluster.state != 'leader':
+                        if not (cluster.state == 'candidate' or cluster.state == 'leader'):
                             print("Changing state to candidate.....") # only if not leader
                             cluster.reset_leadership_vote_timer()
                             cluster.state = 'candidate'
@@ -549,7 +549,7 @@ class Cluster:
                 "profile": None
                 },
             "jsonrpc": "2.0",
-            "id": 3,
+            "id": 4,
             }
 
         print(payload_ack)
@@ -607,7 +607,9 @@ class Cluster:
                 print("We have a leader, so we just poll it")
                 self.reset_leadership_vote_timer()
                 self.pollleader_timer = None
-                tl = await self.start_pollleader()
+
+                if not (cluster.state == 'leader'):
+                    tl = await self.start_pollleader()
 
         time.sleep(self.leadership_vote_timeout)
 
@@ -735,10 +737,12 @@ class Cluster:
     def pollLeader(self, candidate_id) -> Result:
         # Candidate can always poll the leader
 
-        print("Received the pollLeader message from Candidate {candidate} with proposal {proposal}".format(candidate=candidate_id))
+        print("Received the pollLeader message from Candidate {candidate}".format(candidate=candidate_id))
 
         ##if proposal_number == cluster.proposal_number:
         candidate_profile = get_profile_by_cluster_id(candidate_id)
+
+        print("In the PL at leader, candidate profile is {candidate}:{profile}".format(candidate=candidate_id, profile=candidate_profile))
 
             #profile_theta = profile - candidate_profile # Check for significant profile changes /coming
 
