@@ -241,7 +241,7 @@ class Cluster:
         else:
             with open('/tmp/eval_da.txt', 'a') as fpm:
                 fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
-                time.sleep(compute_backoff() / 1000.0) # Only sleep if no leader at the start of the protocol
+                time.sleep(self.compute_backoff() / 1000.0) # Only sleep if no leader at the start of the protocol
 
         # Check if first instance/run
         if self.leadership_timer is None:
