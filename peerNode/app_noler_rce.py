@@ -726,7 +726,7 @@ class Cluster:
         return Success(None)
 
     @method
-    def pollLeader(self, candidate_id, profile, proposal_number) -> Result:
+    def pollLeader(self, candidate_id) -> Result:
         # Candidate can always poll the leader
 
         print("Received the pollLeader message from Candidate {candidate} with proposal {proposal} and MY profile {profile}".format(candidate=candidate_id, proposal=proposal_number, profile=profile))
