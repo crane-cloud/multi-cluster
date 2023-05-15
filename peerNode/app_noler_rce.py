@@ -357,16 +357,19 @@ class Cluster:
                         await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
                         
 
-                    response = await asyncio.gather(*tasks)
+                    responses = await asyncio.gather(*tasks)
 
-                    if response is not None:
-                        if response["result"]["params"][1] >= leader_p:
-                            print("Leader profile is worse, start election cycle")
-                            with open('/tmp/eval_da.txt', 'a') as fppc:
-                                fppc.write("lowProfile: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+                    for response in responses:
+                        if response is not None:
+                            print(response)
 
-                            self.proposal_number = self.leaderx["proposal_number"]
-                            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
+                            if response["result"]["params"][1] >= leader_p:
+                                print("Leader profile is worse, start election cycle")
+                                with open('/tmp/eval_da.txt', 'a') as fppc:
+                                    fppc.write("lowProfile: {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+
+                                self.proposal_number = self.leaderx["proposal_number"]
+                                await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                 # We sleep for the poll leader interval & then send another poll
                 time.sleep(self.pollleader_interval)
