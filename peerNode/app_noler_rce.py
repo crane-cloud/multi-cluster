@@ -453,18 +453,19 @@ class Cluster:
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
 
-                            print("Changing state to candidate.....") # only if we are not a candidate or leader
-                            cluster.reset_leadership_vote_timer()
-                            cluster.state = 'candidate'
+                            if (cluster.state != 'candidate') or (cluster.state != 'leader'):
+                                print("Changing state to candidate.....") # only if we are not a candidate or leader
+                                cluster.reset_leadership_vote_timer()
+                                cluster.state = 'candidate'
 
                             return response_nack
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-
-                        print("Changing state to candidate.....") # only if we are not a candidate or leader
-                        cluster.reset_leadership_vote_timer()
-                        cluster.state = 'candidate'
+                        if cluster.state != 'candidate' or cluster.state != 'leader':
+                            print("Changing state to candidate.....") # only if we are not a candidate or leader
+                            cluster.reset_leadership_vote_timer()
+                            cluster.state = 'candidate'
 
                         return response_nack
                 else:
@@ -502,19 +503,20 @@ class Cluster:
 
                         else:
                             print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
- 
-                            print("Changing state to candidate.....") # only if not leader
-                            cluster.reset_leadership_vote_timer()
-                            cluster.state = 'candidate'
+                            if cluster.state != 'candidate' or cluster.state != 'leader':
+                                print("Changing state to candidate.....") # only if not leader
+                                cluster.reset_leadership_vote_timer()
+                                cluster.state = 'candidate'
 
                             return response_nack
 
                     else:
                         print("Vote: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
  
-                        print("Changing state to candidate.....") # only if not leader
-                        cluster.reset_leadership_vote_timer()
-                        cluster.state = 'candidate'
+                        if cluster.state != 'candidate' or cluster.state != 'leader':
+                            print("Changing state to candidate.....") # only if not leader
+                            cluster.reset_leadership_vote_timer()
+                            cluster.state = 'candidate'
                         
                         return response_nack
                 else:
@@ -733,7 +735,7 @@ class Cluster:
     def pollLeader(self, candidate_id) -> Result:
         # Candidate can always poll the leader
 
-        print("Received the pollLeader message from Candidate {candidate} with proposal {proposal} and MY profile {profile}".format(candidate=candidate_id, proposal=proposal_number, profile=profile))
+        print("Received the pollLeader message from Candidate {candidate} with proposal {proposal}".format(candidate=candidate_id))
 
         ##if proposal_number == cluster.proposal_number:
         candidate_profile = get_profile_by_cluster_id(candidate_id)
