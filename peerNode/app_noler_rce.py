@@ -703,7 +703,7 @@ class Cluster:
         #if cluster.state != "candidate" or cluster.state != "leader":
         #cluster.state = "member"
 
-        if (cluster.leader_id != cluster.member_id) and (cluster.state != "candidate") and (cluster.state != "leader"):
+        if (leader_id != cluster.member_id) and (cluster.state != "candidate") and (cluster.state != "leader"):
             cluster.reset_leadership_timer()
             cluster.state = "member"
 
