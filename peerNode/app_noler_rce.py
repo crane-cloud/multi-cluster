@@ -382,7 +382,8 @@ class Cluster:
 
                     for response in responses:
                         if response is not None:
-                            print(response)
+                            print("Now reset the pollleader timer given the response: {response}".format(response=response))
+                            self.pollleader_timer.reset()
                         
                         else:
                             print("No response from leader, dead?")
@@ -464,7 +465,8 @@ class Cluster:
         elif cluster.voted:
             print("We have voted before\n\n")
 
-            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Voted {voted}".format(member=proposal_number, cluster=cluster.proposal_number, voted=cluster.voted['proposal_number']))
+            print("Proposal numbers:- Member: {member}:{member_p}, Ours: {cluster}:{cluster_p}, and Voted {voted}:{voted_p}".format(member=member_id, member_p=proposal_number, 
+            cluster=cluster.member_id,cluster_p=cluster.proposal_number, voted=cluster.voted['voted'], voted_p=cluster.voted['proposal_number']))
 
             try:
                 if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
@@ -477,19 +479,29 @@ class Cluster:
                             print("Vote: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                             cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                             return response_ack
-
-                        elif (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()):
-                            print("Vote: (LeDead) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        
+                        # If the member profile is less than the voted profile and the leader is dead
+                        elif (member_profile < cluster.voted['profile']) and (cluster.pollleader_timer is not None) and (not cluster.pollleader_timer.is_alive()) and (cluster.state == 'candidate'):
+                            print("Vote: (C LeDead) New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                             return response_ack
 
-                        else:
-                            print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+                        elif (member_profile < cluster.voted['profile']) and (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()) and (cluster.state == 'member'):
+                            print("Vote: (M LeDead) New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+                            return response_ack
+                           
 
-                            if cluster.state == 'member':
-                                print("Changing state to candidate.....") # only if we are not a candidate or leader
-                                cluster.reset_leadership_vote_timer()
-                                cluster.state = 'candidate'
+                        #elif (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()):
+                        #    print("Vote: (LeDead) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                        #    cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        #    return response_ack
+
+                        else:
+                            print("Vote: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & Leader Alive".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+
+                            #if cluster.state == 'member':
+                            #    print("Changing state to candidate.....") # only if we are not a candidate or leader
+                            #   cluster.reset_leadership_vote_timer()
+                            #    cluster.state = 'candidate'
 
                             return response_nack
 
@@ -514,7 +526,8 @@ class Cluster:
             #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
             print("We have received leader info\n\n")
 
-            print("Proposal numbers:- Member: {member}, Ours: {cluster}, and Leader {leader})".format(member=proposal_number, cluster=cluster.proposal_number, leader=cluster.leaderx['proposal_number']))
+            print("Proposal numbers:- Member: {member}:{member_p}, Ours: {cluster}:{cluster_p}, and Voted {leader}:{leader_p}".format(member=member_id, member_p=proposal_number, 
+            cluster=cluster.member_id,cluster_p=cluster.proposal_number, leader=cluster.leaderx['leader'], voted_p=cluster.leaderx['proposal_number']))
 
             try:
 
@@ -529,17 +542,19 @@ class Cluster:
                             cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                             return response_ack
 
-                        elif (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()):
-                            print("Vote: (LeDead) New Member Profile {idx1}:{profile1} is >= Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+
+                        # If the member profile is less than the leader profile and the leader is dead: candidate
+                        elif (member_profile < cluster.leaderx['profile']) and (cluster.pollleader_timer is not None) and (not cluster.pollleader_timer.is_alive()) and (cluster.state == 'candidate'):
+                            print("Vote: (C LeDead) New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
+                            return response_ack
+
+                        # If the member profile is less than the leader profile and the leader is dead: member
+                        elif (member_profile < cluster.leaderx['profile']) and (cluster.leadership_timer is not None) and (not cluster.leadership_timer.is_alive()) and (cluster.state == 'member'):
+                            print("Vote: (M LeDead) New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                             return response_ack
 
                         else:
-                            print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
-                            if cluster.state == "member":
-                                print("Changing state to candidate.....") # only if not leader
-                                cluster.reset_leadership_vote_timer()
-                                cluster.state = 'candidate'
+                            print("Vote: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & Leader Alive".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
 
                             return response_nack
 
@@ -666,7 +681,7 @@ class Cluster:
         profile_o = (profile_o / (len(self.members) - 1)) * 300
 
         #print(profile_o)
-        print("The backoff time is: {backoff} seconds".format(backoff=profile_o))
+        print("The backoff time is: {backoff} ms".format(backoff=profile_o))
 
         return profile_o
 
