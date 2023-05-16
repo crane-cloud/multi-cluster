@@ -18,12 +18,12 @@ from collections import deque
 from util import retrieve_clusters_info
 import copy
 
-ELECTIONTIMEOUT = 0.50 #seconds
-RESPONSETIMEOUT = 0.35 #seconds, used outside class
-POSTREQUESTTIMEOUT = 0.45 #seconds
+ELECTIONTIMEOUT = 1.0 #seconds
+RESPONSETIMEOUT = 0.7 #seconds, used outside class
+POSTREQUESTTIMEOUT = 0.9 #seconds
 
 #Fast path timeouts
-FASTPATH_ELECTIONTIMEOUT = 0.20 #seconds
+FASTPATH_ELECTIONTIMEOUT = 0.40 #seconds
 
 app = Flask(__name__)
 
@@ -43,17 +43,17 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.leadership_timeout = 1.0 #seconds [period after which a member can claim leadership | leader unresponsive]
+        self.leadership_timeout = 1.5 #seconds [period after which a member can claim leadership | leader unresponsive]
         self.leadership_timer = None # [timer for leadership timeout - member | candidate]
-        self.heartbeat_interval = 0.5 #seconds [leader sends heartbeat to followers]
+        self.heartbeat_interval = 0.8 #seconds [leader sends heartbeat to followers]
 
         # Candidate state timer variables
         self.leadership_vote_timer = None # [timer for leadership vote timeout - candidate]
-        self.leadership_vote_timeout = 0.6 #seconds [period after which a candidate can claim leadership]
+        self.leadership_vote_timeout = 0.9 #seconds [period after which a candidate can claim leadership]
 
         self.pollleader_timer = None # [timer for poll leader timeout - alive]
-        self.pollleader_timeout = 0.4 #seconds [period after which a candidate can claim leadership]
-        self.pollleader_interval = 0.3 #seconds [period after which a candidate can poll leader]
+        self.pollleader_timeout = 0.8 #seconds [period after which a candidate can claim leadership]
+        self.pollleader_interval = 0.6 #seconds [period after which a candidate can poll leader]
 
         # Election cycle timeouts
         self.election_timeout = ELECTIONTIMEOUT #seconds [period for completion of an election cycle]
