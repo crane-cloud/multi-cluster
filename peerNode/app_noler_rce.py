@@ -352,14 +352,23 @@ class Cluster:
                         with open('/tmp/eval_da.txt', 'a') as fppd:
                             fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-                        self.proposal_number = self.leaderx["proposal_number"]
-                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)                        
+                        #self.proposal_number = self.leaderx["proposal_number"]
+                        #await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)                        
 
                     responses = await asyncio.gather(*tasks)
 
                     for response in responses:
                         if response is not None:
                             print(response)
+                        
+                        else:
+                            print("No response from leader, dead?")
+
+                            with open('/tmp/eval_da.txt', 'a') as fppd:
+                                fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+
+                            self.proposal_number = self.leaderx["proposal_number"]
+                            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                             ### Maybe we shouldn't for another election
                             #if response["result"]["params"][1] >= leader_p:
@@ -372,6 +381,7 @@ class Cluster:
 
                 # We sleep for the poll leader interval & then send another poll
                 time.sleep(self.pollleader_interval)
+                
             else:
                 print("Not a candidate and/or have no leader\n\n")
                 break
