@@ -249,7 +249,7 @@ class Cluster:
             with open('/tmp/eval_da.txt', 'a') as fpm:
                 fpm.write("noLeader: {member} with proposal {proposal} at {ts}\n".format(member=self.member_id, proposal=self.proposal_number, ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
                 #time.sleep(random.randint(30, 100) / 10.0)
-                time.sleep(self.compute_backoff() / 1000.0) # Only sleep if no leader at the start of the protocol
+                time.sleep((self.compute_backoff() / 1000.0)*1.5) # Only sleep if no leader at the start of the protocol
                 #self.compute_backoff()
 
         # Check if first instance/run
@@ -322,6 +322,8 @@ class Cluster:
 
     async def start_pollleader(self):
         print("In the start_pollleader of the candidate")
+        self.proposal_number = self.leaderx["proposal_number"]
+
         payload_pl = {
             "method": "pollLeader",
             "params": {
@@ -367,7 +369,6 @@ class Cluster:
                             with open('/tmp/eval_da.txt', 'a') as fppd:
                                 fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-                            self.proposal_number = self.leaderx["proposal_number"]
                             await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                             ### Maybe we shouldn't for another election
@@ -380,7 +381,8 @@ class Cluster:
                             #    await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                 # We sleep for the poll leader interval & then send another poll
-                time.sleep(self.pollleader_interval)
+                #time.sleep(self.pollleader_interval)
+                time.sleep(self.compute_backoff() / 1000.0)
 
             else:
                 print("Not a candidate and/or have no leader\n\n")
