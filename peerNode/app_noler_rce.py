@@ -344,7 +344,6 @@ class Cluster:
                     tasks = []
 
                     try:
-                        payload_pl["params"]["profile"] = leader_p
                         task = asyncio.create_task(make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)) # ?Shorter timeout - leader should respond fast
                         tasks.append(task)
                     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
