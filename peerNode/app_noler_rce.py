@@ -359,7 +359,8 @@ class Cluster:
 
             if self.state == 'candidate' and self.leaderx:
 
-                leader_p = get_profile_by_cluster_id(member_id=self.leaderx["leader"])
+                #todo
+                #leader_prc = get_profile_by_cluster_id(member_id=self.leaderx["leader"])
 
                 print("\n\nPoll leader {leader} with {payload}".format(leader=self.leaderx["leader"], payload=payload_pl))
 
@@ -526,8 +527,7 @@ class Cluster:
             #print("Received leader {leader} info before with better proposal {proposal} than {l}".format(leader=cluster.leaderx['leader'], proposal=cluster.leaderx['proposal_number'], l=proposal_number))
             print("We have received leader info\n\n")
 
-            print("Proposal numbers:- Member: {member}:{member_p}, Ours: {cluster}:{cluster_p}, and Voted {leader}:{leader_p}".format(member=member_id, member_p=proposal_number, 
-            cluster=cluster.member_id,cluster_p=cluster.proposal_number, leader=cluster.leaderx['leader'], voted_p=cluster.leaderx['proposal_number']))
+            print("Proposal numbers:- Member: {member}:{member_p}, Ours: {cluster}:{cluster_p}, and Voted {leader}:{leader_pr}".format(member=member_id, member_p=proposal_number, cluster=cluster.member_id,cluster_p=cluster.proposal_number, leader=cluster.leaderx['leader'], leader_pr=cluster.leaderx['proposal_number']))
 
             try:
 
