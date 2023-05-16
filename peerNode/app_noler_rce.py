@@ -384,7 +384,7 @@ class Cluster:
                     for response in responses:
                         if response is not None:
                             print("Now reset the pollleader timer given the response: {response}".format(response=response))
-                            self.pollleader_timer.reset()
+                            self.reset_pollleader_timer()
                         
                         else:
                             print("No response from leader, dead?")
