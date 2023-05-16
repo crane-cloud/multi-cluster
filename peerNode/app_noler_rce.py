@@ -19,7 +19,7 @@ from util import retrieve_clusters_info
 import copy
 
 ELECTIONTIMEOUT = 0.8 #seconds
-RESPONSETIMEOUT = 0.5 #seconds, used outside class
+RESPONSETIMEOUT = 0.7 #seconds, used outside class
 POSTREQUESTTIMEOUT = 0.7 #seconds
 
 #Fast path timeouts
@@ -166,7 +166,7 @@ class Cluster:
         try:
             responses = await asyncio.wait_for(self.async_op(payload_request_votes), timeout=self.response_timeout)
         except asyncio.TimeoutError as e:
-            print(f"Timeout Error: {e}")
+            print(f"Timeout Error in [start_election_cycle]: {e}")
             return None
 
         if responses:
@@ -197,10 +197,9 @@ class Cluster:
                         print("Dang, it is an invalid vote or response:(")
                         continue
 
-            print("Number of votes received: {votes}".format(votes=len(self.votes[self.proposal_number])))
-
-
             try:
+
+                print("Number of votes received: {votes}".format(votes=len(self.votes[self.proposal_number])))
 
                 if len(self.votes[self.proposal_number]) >= leader_size:
                 #We can now execute the leader role functions - send ackVote
@@ -210,16 +209,38 @@ class Cluster:
 
                     self.state = 'leader'
                 else:
+                    print("Unsuccessful election cycle - role revert")
+
+                    if self.state == 'candidate':
+                        self.state = 'candidate'
+                    
+                    if self.state == 'member':
+                        self.state = 'member'
+
                     return None
-                #print("We restart the election cycle as member at next proposal {proposal} \n\n\n".format(proposal=(self.proposal_number + 1)))
-                    self.state = 'member'
+
             except Exception as e:
                 print(f"Exception in vote count: {e}")
+
+                if self.state == 'candidate':
+                    self.state = 'candidate'
+                    
+                if self.state == 'member':
+                        self.state = 'member'
+
                 return None
-                self.state = 'member'
+
         else:
+
+            print("Unsuccessful election cycle - role revert")
+
+            if self.state == 'candidate':
+                self.state = 'candidate'
+                    
+            elif self.state == 'member':
+                self.state = 'member'
+
             return None
-            self.state = 'member'
 
 
     async def member(self):
@@ -644,7 +665,8 @@ class Cluster:
             
         profile_o = (profile_o / (len(self.members) - 1)) * 300
 
-        print(profile_o)
+        #print(profile_o)
+        print("The backoff time is: {backoff} seconds".format(backoff=profile_o))
 
         return profile_o
 
@@ -681,7 +703,7 @@ class Cluster:
             fp.write("ackVote: {leader} with proposal {proposal} at {ts}\n".format(leader=cluster.leaderx["leader"], proposal=cluster.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
         #For future elections, we update our proposal number
-        cluster.proposal_number = proposal_number
+        cluster.proposal_number = proposal_number # this can interfere with a current election cycle
 
         print("Updated my proposal number to: {proposal}".format(proposal=cluster.leaderx["proposal_number"]))
 
