@@ -762,8 +762,8 @@ class Cluster:
             cluster.state = "member"
 
         if cluster.state == "candidate":
-            self.reset_noler_timer()
-            self.reset_pollleader_timer()
+            cluster.reset_noler_timer()
+            cluster.reset_pollleader_timer()
 
         return Success(None)
 
