@@ -365,25 +365,22 @@ class Cluster:
                 #todo
                 #leader_prc = get_profile_by_cluster_id(member_id=self.leaderx["leader"])
 
-                if self.pollleader_timer and self.pollleader_timer.is_alive():
-                    print("\n\nPollleader timer set to expire in", self.pollleader_timer.interval, "seconds")
+                print("\n\nPolling leader {leader} with {payload}".format(leader=self.leaderx["leader"], payload=payload_pl))
 
-                    print("Poll leader {leader} with {payload}".format(leader=self.leaderx["leader"], payload=payload_pl))
+                try:
+                    response = await make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)
 
-                    try:
-                        response = await make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)
+                    if response is not None:
+                        print("Leader Alive at Candidate poll: Response {response} received".format(response=response))
+                        self.reset_pollleader_timer() # no special need
+                        self.reset_noler_timer()
+                    else:
+                        print("Leader Dead at Candidate - Now start a new election cycle")
 
-                        if response is not None:
-                            print("Leader Alive - Now reset the pollleader & noler timer: {response}".format(response=response))
-                            self.reset_pollleader_timer()
-                            self.reset_noler_timer()
-                        else:
-                            print("Leader Dead - Now start a new election cycle")
+                        with open('/tmp/eval_da.txt', 'a') as fppd:
+                            fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
 
-                            with open('/tmp/eval_da.txt', 'a') as fppd:
-                                fppd.write("Dead: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
-
-                            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
+                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                             ### Maybe we shouldn't for another election
                             #if response["result"]["params"][1] >= leader_p:
@@ -394,19 +391,16 @@ class Cluster:
                             #    self.proposal_number = self.leaderx["proposal_number"]
                             #    await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
  
-                    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                        print(f"Timeout|Connect Error for leader: {self.leaderx['leader']}, dead?")
+                except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                    print(f"Timeout|Connect Error for leader: {self.leaderx['leader']}, dead?")
 
-                        with open('/tmp/eval_da.txt', 'a') as fppd:
-                            fppd.write("Dead? Error: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
-                        #await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
-
-                else:
-                    await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
-                
+                    with open('/tmp/eval_da.txt', 'a') as fppd:
+                        fppd.write("Dead? Error: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+                    await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)           
 
                 # We sleep for the poll leader interval & then send another poll
-                time.sleep(self.pollleader_interval)
+                print("Sleeping for {interval} seconds".format(interval=self.pollleader_timeout))
+                time.sleep(self.pollleader_timeout)
                 #time.sleep(self.compute_backoff() / 1000.0)
 
             else:
@@ -644,9 +638,7 @@ class Cluster:
 
         else:
             print("We have a leader, so we just poll it")
-            if cluster.state != 'leader':
-                #self.reset_leadership_vote_timer()
-                #self.reset_pollleader_timer()
+            if cluster.state != 'leader' and cluster.state != 'member':
                 tl = await self.start_pollleader()
 
 
@@ -692,7 +684,7 @@ class Cluster:
         leader_profile = get_profile_by_cluster_id(member_id)
 
 
-        print("Cluster state at ackVote {ack}".format(ack=cluster.state))
+        print("Cluster state at ackVote: {ack}".format(ack=cluster.state))
         cluster.leaderx = {"proposal_number": proposal_number, "leader": member_id, "profile": leader_profile}
 
         with open('/tmp/eval_da.txt', 'a') as fp:
@@ -718,6 +710,11 @@ class Cluster:
             cluster.reset_noler_timer()
             cluster.reset_leadership_timer()
             cluster.state = "member"
+
+        if cluster.state == "candidate":
+            self.reset_noler_timer()
+            self.reset_pollleader_timer()
+            
 
         return Success(response)
 
@@ -763,6 +760,10 @@ class Cluster:
             cluster.reset_noler_timer()
             cluster.reset_leadership_timer()
             cluster.state = "member"
+
+        if cluster.state == "candidate":
+            self.reset_noler_timer()
+            self.reset_pollleader_timer()
 
         return Success(None)
 
