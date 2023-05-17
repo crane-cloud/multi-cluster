@@ -291,12 +291,6 @@ class Cluster:
             await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
         # We can wait here...
 
-        if cluster.noler_timer and cluster.noler_timer.is_alive():
-            print("NoLeR timer set to expire in", self.noler_timer.interval, "seconds")
-
-        else:
-            print("NoLeR timer has expired")
-
         time.sleep(self.heartbeat_interval)
 
 
@@ -485,7 +479,7 @@ class Cluster:
                         print("Our profile is bad - in voted")
 
                         if cluster.noler_timer and cluster.noler_timer.is_alive():
-                            print("NoLeR timer set to expire in", self.noler_timer.interval, "seconds")
+                            print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")
 
                             if (member_profile >= cluster.voted['profile']): # if better than the voted, we ACK immediately
                                 print("Voted: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
@@ -493,7 +487,7 @@ class Cluster:
                                 return response_ack
 
                         else:
-                            print("Normal Path Election")
+                            print("Normal Path Election - NoLeR timer expired")
                             cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                             return response_ack
 
@@ -529,7 +523,7 @@ class Cluster:
                         print("Our profile is bad - in leaderx")
 
                         if cluster.noler_timer and cluster.noler_timer.is_alive():
-                            print("NoLeR timer set to expire in", self.noler_timer.interval, "seconds")                        
+                            print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")                        
 
                             if (member_profile >= cluster.leaderx['profile']):
                                 print("Leaderx: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
