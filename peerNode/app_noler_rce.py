@@ -367,7 +367,7 @@ class Cluster:
                     print("Poll leader {leader} with {payload}".format(leader=self.leaderx["leader"], payload=payload_pl))
 
                     try:
-                        response = make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)
+                        response = await make_post_request(self.leaderx["leader"], payload_pl, self.post_request_timeout)
 
                         if response is not None:
                             print("Leader Alive - Now reset the pollleader & noler timer: {response}".format(response=response))
