@@ -18,7 +18,7 @@ from collections import deque
 from util import retrieve_clusters_info
 import copy
 
-ELECTIONTIMEOUT = 0.8 #seconds
+ELECTIONTIMEOUT = 0.9 #seconds
 RESPONSETIMEOUT = 0.7 #seconds, used outside class
 POSTREQUESTTIMEOUT = 0.7 #seconds
 
@@ -43,13 +43,13 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.leadership_timeout = 1.2 #seconds [period after which a member can claim leadership | leader unresponsive]
+        self.leadership_timeout = 0.8 #seconds [period after which a member can claim leadership | leader unresponsive]
         self.leadership_timer = None # [timer for leadership timeout - member | candidate]
         self.heartbeat_interval = 0.5 #seconds [leader sends heartbeat to followers]
 
         # Candidate state timer variables
         self.leadership_vote_timer = None # [timer for leadership vote timeout - candidate]
-        self.leadership_vote_timeout = 0.7 #seconds [period after which a candidate can claim leadership]
+        self.leadership_vote_timeout = 0.65 #seconds [period after which a candidate can claim leadership]
 
         self.pollleader_timer = None # [timer for poll leader timeout - alive]
         self.pollleader_timeout = 0.6 #seconds [period after which a candidate can claim leadership]
@@ -271,7 +271,14 @@ class Cluster:
         if self.leadership_timer is None:
             # We start a new election cycle
             print("No leaderx, so we start a new election cycle")
-            await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout) # within the largest latency range
+
+            # possibly a new election on hence timeout
+            try:
+                await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout) # within the largest latency range
+
+            except asyncio.TimeoutError as e:
+                print(f"Timeout Error in [member]: {e}")
+                continue
 
         elif self.leadership_timer and self.leadership_timer.is_alive():
             print("Leadership timer set to expire in", self.leadership_timer.interval, "seconds")
