@@ -278,8 +278,7 @@ class Cluster:
 
             except asyncio.TimeoutError as e:
                 print(f"Timeout Error in [member]: {e}")
-                continue
-
+                
         elif self.leadership_timer and self.leadership_timer.is_alive():
             print("Leadership timer set to expire in", self.leadership_timer.interval, "seconds")
 
@@ -635,7 +634,7 @@ class Cluster:
 
 
     async def candidate(self):
-        print('Candidate Role')
+        print('Candidate Role.....')
         #We arrive here as a result of one of the profiles better than some proposal profile
 
         #We set the LeadershipVoteTimer [We expect a leader within this time]
