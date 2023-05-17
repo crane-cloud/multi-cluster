@@ -443,22 +443,31 @@ class Cluster:
             try:
                 print("Seems we have not voted before\n\n")
 
-                if profilev > member_profile:
-                    print("My profile {idx1}:{profile1} > Member profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
+                if cluster.noler_timer and cluster.noler_timer.is_alive():
+                    print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds") 
 
-                    if cluster.state == 'member':
+                    if profilev > member_profile:
+                        print("My profile {idx1}:{profile1} > Member profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
 
-                        print("Changing state to candidate...")
-                        #start the leadership_vote_timer
-                        cluster.reset_leadership_vote_timer()
-                        cluster.state = 'candidate'
+                        if cluster.state == 'member':
 
-                    return response_nack
+                            print("Changing state to candidate...")
+                            #start the leadership_vote_timer
+                            cluster.reset_leadership_vote_timer()
+                            cluster.state = 'candidate'
+
+                        return response_nack
                 
+                    else:
+                        print("My profile {idx1}:{profile1} <= profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        return response_ack
+
                 else:
-                    print("My profile {idx1}:{profile1} <= profile {idx2}:{profile2}".format(profile1=profilev, profile2=member_profile,idx1=cluster.member_id,idx2=member_id))
+                    print("Normal Path Election - NoLeR timer expired")
                     cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                     return response_ack
+
 
             except Exception as e:
                 print("Exception in voter method: {e}".format(e=e))
@@ -473,32 +482,36 @@ class Cluster:
 
             try:
                 if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.voted['proposal_number']):
-    
-                    if (member_profile >= profilev):
 
-                        print("Our profile is bad - in voted")
+                    if cluster.noler_timer and cluster.noler_timer.is_alive():
+                        print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")
 
-                        if cluster.noler_timer and cluster.noler_timer.is_alive():
-                            print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")
+                        if (member_profile >= profilev):
+                            print("Our profile is bad - in voted")
 
                             if (member_profile >= cluster.voted['profile']): # if better than the voted, we ACK immediately
                                 print("Voted: New Member Profile {idx1}:{profile1} is >= Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                                 cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                                 return response_ack
 
+                            else:
+                                print("Voted: New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
+                                return response_nack
+
                         else:
-                            print("Normal Path Election - NoLeR timer expired")
-                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                            return response_ack
+                            print("Voted: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+                          
+                            if cluster.state == 'member':
+                                print("Changing state to candidate.....") # only if we are not a candidate or leader
+                                cluster.reset_leadership_vote_timer()
+                                cluster.state = 'candidate'
+                            return response_nack
 
                     else:
-                        print("Voted: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
-                        if cluster.state == 'member':
-                            print("Changing state to candidate.....") # only if we are not a candidate or leader
-                            cluster.reset_leadership_vote_timer()
-                            cluster.state = 'candidate'
+                        print("Normal Path Election in Voted - NoLeR timer expired")
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        return response_ack
 
-                        return response_nack
                 else:
                     print("Stale election - in voted\n\n")
                     return response_nack
@@ -518,32 +531,36 @@ class Cluster:
 
                 if (proposal_number > cluster.proposal_number) and (proposal_number > cluster.leaderx['proposal_number']):
 
-                    if (member_profile >= profilev):
+                    if cluster.noler_timer and cluster.noler_timer.is_alive():
+                        print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")
 
-                        print("Our profile is bad - in leaderx")
+                        if (member_profile >= profilev):
 
-                        if cluster.noler_timer and cluster.noler_timer.is_alive():
-                            print("NoLeR timer set to expire in", cluster.noler_timer.interval, "seconds")                        
-
+                            print("Our profile is bad - in leaderx")
+                  
                             if (member_profile >= cluster.leaderx['profile']):
                                 print("Leaderx: New Member Profile {idx1}:{profile1} is >= Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                                 cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                                 return response_ack
 
+                            else:
+                                print("Leaderx: New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
+                                return response_nack
                         else:
-                            print("Normal Path Election")
-                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
-                            return response_ack
+                            print("Leaderx: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
+ 
+                            if cluster.state == "member":
+                                print("Changing state to candidate.....") # only if not leader
+                                cluster.reset_leadership_vote_timer()
+                                cluster.state = 'candidate'
+                        
+                            return response_nack
 
                     else:
-                        print("Leaderx: New Member Profile {idx1}:{profile1} is < Our Profile {idx2}:{profile2}".format(profile1=member_profile,profile2=profilev, idx1=member_id, idx2=cluster.member_id))
- 
-                        if cluster.state == "member":
-                            print("Changing state to candidate.....") # only if not leader
-                            cluster.reset_leadership_vote_timer()
-                            cluster.state = 'candidate'
-                        
-                        return response_nack
+                        print("Normal Path Election in Leaderx - NoLeR timer expired")
+                        cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
+                        return response_ack
+
                 else:
                     print("Stale election - in leaderx\n\n")
                     return response_nack
