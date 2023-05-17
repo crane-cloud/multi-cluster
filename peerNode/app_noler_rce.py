@@ -61,13 +61,14 @@ class Cluster:
         self.post_request_timeout = POSTREQUESTTIMEOUT #seconds [period after which a member expects a response from any post request]
 
         # Normal Path
-        self.noler_timeout = 2.0 #seconds [period after which NoLeR has failed]
+        self.noler_timeout = 3.0 #seconds [period after which NoLeR has failed]
         self.noler_timer = None # [timer for NoLeR timeout - member | candidate]
 
 
     # We perform a set of functions based on the state of the cluster
     def run(self):
         print('Run Mode with thread {thread}'.format(thread=threading.current_thread().name))
+        self.reset_noler_timer()
         while True:
             print("Current State: {state}".format(state=self.state))
             if self.state == 'member':
@@ -261,7 +262,7 @@ class Cluster:
 
         if self.leaderx or cluster.leaderx:
 
-            print("I have a leader with ID {idx} at propsal {proposal}".format(idx = self.leaderx["leader"], proposal = self.leaderx["proposal_number"]))
+            print("I have a leader with ID {idx} at proposal {proposal}".format(idx = self.leaderx["leader"], proposal = self.leaderx["proposal_number"]))
 
         else:
             with open('/tmp/eval_da.txt', 'a') as fpm:
