@@ -344,6 +344,7 @@ class Cluster:
     async def start_pollleader(self):
         print("In the start_pollleader of the candidate")
         self.proposal_number = self.leaderx["proposal_number"]
+        self.reset_pollleader_timer()
 
         payload_pl = {
             "method": "pollLeader",
@@ -394,9 +395,8 @@ class Cluster:
                         print(f"Timeout|Connect Error for leader: {self.leaderx['leader']}, dead?")
 
                         with open('/tmp/eval_da.txt', 'a') as fppd:
-                            fppd.write("Dead Error: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
-
-                        await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
+                            fppd.write("Dead? Error: Leader {leader} with proposal {proposal} at {ts}\n".format(leader = self.leaderx["leader"], proposal = self.leaderx["proposal_number"], ts=datetime.datetime.now().strftime("%M:%S.%f")[:-2]))
+                        #await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
 
                 else:
                     await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
@@ -491,7 +491,7 @@ class Cluster:
                             print("Voted: (M LeDead) New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                             return response_ack
                         
-                        elif (member_profile < cluster.voted['profile']) and (cluster.noler_timer is not None) and (not cluster.reset_noler_timer.is_alive()):
+                        elif (member_profile < cluster.voted['profile']) and (cluster.noler_timer is not None) and (not cluster.noler_timer.is_alive()):
                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                            print("Voted: (CM LeDead) New Member Profile {idx1}:{profile1} is < Voted Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.voted['profile'],idx1=member_id, idx2=cluster.voted['voted']))
                            return response_ack
@@ -550,7 +550,7 @@ class Cluster:
                             print("Leaderx (M LeDead) New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                             return response_ack
 
-                        elif (member_profile < cluster.leaderx['profile']) and (cluster.noler_timer is not None) and (not cluster.reset_noler_timer.is_alive()):
+                        elif (member_profile < cluster.leaderx['profile']) and (cluster.noler_timer is not None) and (not cluster.noler_timer.is_alive()):
                            cluster.voted = {"proposal_number": proposal_number, "voted": member_id, "profile": member_profile}
                            print("Voted: (CM LeDead) New Member Profile {idx1}:{profile1} is < Leader Profile {idx2}:{profile2} & LeDa".format(profile1=member_profile,profile2=cluster.leaderx['profile'],idx1=member_id, idx2=cluster.leaderx['leader']))
                            return response_ack
