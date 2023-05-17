@@ -18,12 +18,12 @@ from collections import deque
 from util import retrieve_clusters_info
 import copy
 
-ELECTIONTIMEOUT = 0.9 #seconds
-RESPONSETIMEOUT = 0.7 #seconds, used outside class
-POSTREQUESTTIMEOUT = 0.7 #seconds
+ELECTIONTIMEOUT = 2.7 #seconds
+RESPONSETIMEOUT = 2.1 #seconds, used outside class
+POSTREQUESTTIMEOUT = 2.1 #seconds
 
 #Fast path timeouts
-FASTPATH_ELECTIONTIMEOUT = 0.20 #seconds
+FASTPATH_ELECTIONTIMEOUT = 0.60 #seconds
 
 app = Flask(__name__)
 
@@ -43,17 +43,17 @@ class Cluster:
         self.voted = {} # who this member has voted
         self.leaderx = {} # the leader information at this member
 
-        self.leadership_timeout = 0.8 #seconds [period after which a member can claim leadership | leader unresponsive]
+        self.leadership_timeout = 2.4 #seconds [period after which a member can claim leadership | leader unresponsive]
         self.leadership_timer = None # [timer for leadership timeout - member | candidate]
-        self.heartbeat_interval = 0.5 #seconds [leader sends heartbeat to followers]
+        self.heartbeat_interval = 1.5 #seconds [leader sends heartbeat to followers]
 
         # Candidate state timer variables
         self.leadership_vote_timer = None # [timer for leadership vote timeout - candidate]
-        self.leadership_vote_timeout = 0.65 #seconds [period after which a candidate can claim leadership]
+        self.leadership_vote_timeout = 1.3 #seconds [period after which a candidate can claim leadership]
 
         self.pollleader_timer = None # [timer for poll leader timeout - alive]
-        self.pollleader_timeout = 0.6 #seconds [period after which a candidate can claim leadership]
-        self.pollleader_interval = 0.4 #seconds [period after which a candidate can poll leader]
+        self.pollleader_timeout = 1.8 #seconds [period after which a candidate can claim leadership]
+        self.pollleader_interval = 1.2 #seconds [period after which a candidate can poll leader]
 
         # Election cycle timeouts
         self.election_timeout = ELECTIONTIMEOUT #seconds [period for completion of an election cycle]
@@ -61,7 +61,7 @@ class Cluster:
         self.post_request_timeout = POSTREQUESTTIMEOUT #seconds [period after which a member expects a response from any post request]
 
         # Normal Path
-        self.noler_timeout = 3.0 #seconds [period after which NoLeR has failed]
+        self.noler_timeout = 5.0 #seconds [period after which NoLeR has failed]
         self.noler_timer = None # [timer for NoLeR timeout - member | candidate]
 
 
@@ -290,6 +290,13 @@ class Cluster:
 
             await asyncio.wait_for(self.start_election_cycle(), timeout=self.election_timeout)
         # We can wait here...
+
+        if cluster.noler_timer and cluster.noler_timer.is_alive():
+            print("NoLeR timer set to expire in", self.noler_timer.interval, "seconds")
+
+        else:
+            print("NoLeR timer has expired")
+
         time.sleep(self.heartbeat_interval)
 
 
