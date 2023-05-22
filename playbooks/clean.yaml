@@ -6,9 +6,9 @@
     - name: Clean the multi-cluster setup for the peers
       command: make clean
       args:
-        chdir: /home/ubuntu/sinendet/peerNode
+        chdir: /home/ubuntu/multi-cluster/peerNode
 
-    #- name: Delete contents & directory of the user Alex
-    #  file:
-    #    state: absent
-    #    path: /home/ubuntu/sinendet/
+    - name: Delete contents & directory of the user
+      file:
+        state: absent
+        path: /home/ubuntu/multi-cluster/

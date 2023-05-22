@@ -56,22 +56,14 @@
         path: /usr/local/bin/docker-compose
         owner: ubuntu
         group: docker
-#    - name: Delete contents & directory of the user Alex
-#      file:
-#        state: absent
-#        path: /home/ubuntu/sinendet/peerNode/storage
     - name: Clone the MC github repository
       git:
         repo: https://github.com/crane-cloud/multi-cluster.git
-        dest: /home/ubuntu/sinendet
-        version: ft-integrate-graphite
+        dest: /home/ubuntu/multi-cluster
+        version: ft-performance-optimization
         clone: yes
         update: yes
     - name: Run the multi-cluster setup for the peers
       command: make start
       args:
-        chdir: /home/ubuntu/sinendet/peerNode
-    #- name: Copy storage-schemas.conf to the conf directory
-    #  copy:
-    #    src: /users/ubuntu/sinendet/peerNode/storage-schemas.conf
-    #    dest: /users/ubuntu/sinendet/peerNode/conf/
+        chdir: /home/ubuntu/multi-cluster/peerNode
